@@ -147,17 +147,16 @@
         .finding-card p { font-size: 0.82rem; color: #444; margin: 0; }
 
         /* PAPERS TABLE */
-        .papers-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-        .papers-table th {
-            background: var(--primary);
-            color: #fff;
-            padding: 10px 14px;
-            text-align: left;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
+        .ref-list { padding-left: 20px; margin: 0; }
+        .ref-list li {
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: #333;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .papers-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
-        .papers-table tr:hover td { background: var(--light); }
+        .ref-list li:last-child { border-bottom: none; }
+        .ref-list li em { color: var(--primary); font-style: italic; }
         .tag-pill {
             display: inline-block;
             background: rgba(45,122,79,0.1);
@@ -258,7 +257,7 @@
         <p>Studying existing IoT greenhouse systems, VLC communication, LoRa protocols, and mushroom cultivation science to identify our research gap.</p>
         <div class="status-badge"><i class="fas fa-check-circle"></i> Completed</div>
         <div class="meta-chips">
-            <span class="meta-chip"><i class="fas fa-calendar"></i> January 2026</span>
+            <span class="meta-chip"><i class="fas fa-calendar"></i> Feb – Mar 2026</span>
             <span class="meta-chip"><i class="fas fa-clock"></i> Week 1 of 14</span>
             <span class="meta-chip"><i class="fas fa-file-alt"></i> 20+ Papers Reviewed</span>
             <span class="meta-chip"><i class="fas fa-university"></i> EEE · University of Peradeniya</span>
@@ -316,58 +315,29 @@
 
                 <!-- Papers Reviewed -->
                 <div class="main-card">
-                    <p class="section-title"><i class="fas fa-book"></i> Key Papers &amp; References Reviewed</p>
-                    <table class="papers-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Topic</th>
-                                <th>Relevance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>IoT-based Smart Greenhouse Monitoring Systems</td>
-                                <td><span class="tag-pill">IoT</span></td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Visible Light Communication for Indoor IoT</td>
-                                <td><span class="tag-pill">VLC</span></td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>LoRa Network Architecture for Agricultural Monitoring</td>
-                                <td><span class="tag-pill">LoRa</span></td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>CNN-based Mushroom Disease Detection</td>
-                                <td><span class="tag-pill">ML</span></td>
-                            </tr>
-                            <tr>
-                                <td>5</td>
-                                <td>Fuzzy Logic Control for Greenhouse Automation</td>
-                                <td><span class="tag-pill">Control</span></td>
-                            </tr>
-                            <tr>
-                                <td>6</td>
-                                <td>NoIR Imaging for Pre-visual Plant Disease Detection</td>
-                                <td><span class="tag-pill">Imaging</span></td>
-                            </tr>
-                            <tr>
-                                <td>7</td>
-                                <td>Oyster Mushroom Cultivation in Tropical Climates</td>
-                                <td><span class="tag-pill">Agriculture</span></td>
-                            </tr>
-                            <tr>
-                                <td>8</td>
-                                <td>ESP32 TinyML for Edge AI in Agriculture</td>
-                                <td><span class="tag-pill">TinyML</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <p class="section-title"><i class="fas fa-book"></i> References</p>
+                    <ol class="ref-list">
+                        <li>
+                            A. Zakeri et al., "M18K: A Comprehensive RGB-D Dataset and Benchmark for Mushroom Detection and Instance Segmentation," <em>arXiv preprint arXiv:2407.11275</em>, Jul. 2024.
+                            <span class="tag-pill ms-2">ML</span>
+                        </li>
+                        <li>
+                            V. Moysiadis, G. Kokkonis, S. Bibi, I. Moscholios, N. Maropoulos, and P. Sarigiannidis, "Monitoring Mushroom Growth with Machine Learning," <em>Agriculture</em>, vol. 13, p. 223, 2023.
+                            <span class="tag-pill ms-2">Agriculture</span>
+                        </li>
+                        <li>
+                            M. S. Jacob, A. Xu, K. Qian, Z. Qi, X. Li, and B. Zhang, "Artificial Intelligence in Edible Mushroom Cultivation, Breeding, and Classification: A Comprehensive Review," <em>J. Fungi</em>, vol. 11, p. 758, Oct. 2025.
+                            <span class="tag-pill ms-2">AI</span>
+                        </li>
+                        <li>
+                            A. Krizhevsky, I. Sutskever, and G. E. Hinton, "ImageNet Classification with Deep Convolutional Neural Networks," in <em>Advances in Neural Information Processing Systems</em>, vol. 25, 2012.
+                            <span class="tag-pill ms-2">CNN</span>
+                        </li>
+                        <li>
+                            D. Cama-Pinto et al., "Empirical Model of Radio Wave Propagation in the Presence of Vegetation inside Greenhouses Using Regularized Regressions," <em>Sensors</em>, vol. 20, p. 6621, Nov. 2020.
+                            <span class="tag-pill ms-2">LoRa</span>
+                        </li>
+                    </ol>
                 </div>
 
                 <!-- Next/Prev navigation -->
@@ -387,7 +357,7 @@
                     <p class="sidebar-title">Week Info</p>
                     <div class="info-row"><span>Phase</span><span>Literature Review</span></div>
                     <div class="info-row"><span>Duration</span><span>Week 1 of 14</span></div>
-                    <div class="info-row"><span>Period</span><span>January 2026</span></div>
+                    <div class="info-row"><span>Period</span><span>Feb – Mar 2026</span></div>
                     <div class="info-row"><span>Status</span><span style="color:var(--primary);">✓ Completed</span></div>
                     <div class="info-row"><span>Papers Read</span><span>20+</span></div>
                     <div class="info-row"><span>Research Gap Found</span><span style="color:var(--primary);">Yes ✓</span></div>
