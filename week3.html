@@ -1,0 +1,426 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Week 3 — VLC Downlink Design | IGMS Project</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d7a4f;
+            --secondary: #8bc34a;
+            --accent: #00bcd4;
+            --dark: #0f1f14;
+            --light: #f0f7f2;
+            --text-muted: #6c8f76;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #222; background: #f8f9fa; }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; }
+
+        /* TOP BAR */
+        .top-bar {
+            background: var(--dark);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .top-bar a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .top-bar a:hover { color: var(--secondary); }
+        .top-bar .brand { color: var(--secondary); font-weight: 700; font-size: 0.95rem; }
+
+        /* HERO */
+        .week-hero {
+            background: linear-gradient(135deg, #1a3d27 0%, #2d5a1b 100%);
+            padding: 60px 0 50px;
+            color: #fff;
+        }
+        .phase-label {
+            display: inline-block;
+            background: rgba(139,195,74,0.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .week-hero h1 { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 14px; line-height: 1.2; }
+        .week-hero p { color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 650px; margin-bottom: 24px; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139,195,74,0.15);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .meta-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .meta-chip {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.8);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .meta-chip i { color: var(--secondary); }
+
+        /* CONTENT */
+        .content-wrap { padding: 50px 0 80px; }
+        .main-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--light);
+            margin-left: 10px;
+        }
+
+        /* BULLET LIST */
+        .work-list { list-style: none; padding: 0; margin: 0; }
+        .work-list li {
+            padding: 13px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 14px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .work-list li:last-child { border-bottom: none; }
+        .work-list li::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+
+        /* ENV CONDITIONS TABLE */
+        .env-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .env-table th {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+        .env-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        .env-table tr:hover td { background: var(--light); }
+
+        /* SPECIAL OUTCOME BOX */
+        .outcome-box {
+            background: linear-gradient(135deg, var(--primary), #1a5235);
+            border-radius: 12px;
+            padding: 28px 32px;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+        .outcome-box h5 { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--secondary); margin-bottom: 10px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; }
+        .outcome-box p { margin: 0; font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
+        .outcome-box .outcome-icon { font-size: 2.5rem; margin-bottom: 14px; }
+
+        /* SIDEBAR */
+        .sidebar-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+        .sidebar-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--dark);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.82rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:first-child { color: var(--text-muted); }
+        .info-row span:last-child { font-weight: 600; color: var(--dark); text-align: right; }
+
+        /* WEEK NAV */
+        .week-nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        .week-btn {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .week-btn.done { background: var(--primary); color: #fff; }
+        .week-btn.upcoming { background: #f0f0f0; color: #aaa; }
+        .week-btn.active-week { border-color: var(--dark) !important; box-shadow: 0 0 0 2px var(--secondary); }
+
+        /* NAV FOOTER */
+        .nav-footer {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-btn.prev { background: var(--light); color: var(--primary); }
+        .nav-btn.prev:hover { background: #dceee4; color: var(--primary); }
+        .nav-btn.next { background: var(--primary); color: #fff; }
+        .nav-btn.next:hover { background: #1a5235; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="index.html" class="brand">🌿 IGMS · IoT &amp; ML</a>
+        <div class="d-flex gap-3">
+            <a href="index.html#timeline"><i class="fas fa-list me-1"></i>All Weeks</a>
+            <a href="index.html#team"><i class="fas fa-users me-1"></i>Team</a>
+            <a href="index.html#contact"><i class="fas fa-envelope me-1"></i>Contact</a>
+        </div>
+    </div>
+</div>
+
+<div class="week-hero">
+    <div class="container">
+        <span class="phase-label">Phase 2 · System Design</span>
+        <h1>Week 3: VLC Downlink System Design</h1>
+        <p>Designing the Visible Light Communication (VLC) downlink architecture and finalizing the hardware components required for serial data transmission.</p>
+        <div class="status-badge"><i class="fas fa-check-circle"></i> Completed</div>
+        <div class="meta-chips">
+            <span class="meta-chip"><i class="fas fa-calendar"></i> Mar 2026</span>
+            <span class="meta-chip"><i class="fas fa-clock"></i> Week 3 of 14</span>
+            <span class="meta-chip"><i class="fas fa-map-marker-alt"></i> Hardware &amp; System Design</span>
+            <span class="meta-chip"><i class="fas fa-university"></i> Engineering · University of Peradeniya</span>
+        </div>
+    </div>
+</div>
+
+<div class="content-wrap">
+    <div class="container">
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+
+                <div class="outcome-box">
+                    <div class="outcome-icon">💡</div>
+                    <h5>Major Outcome — VLC Architecture & Hardware Selected</h5>
+                    <p>We successfully mapped out the foundational architecture for the Visible Light Communication (VLC) downlink system. All necessary hardware components for the transmitter (LED driver side) and receiver (photodiode side) have been identified and documented for procurement.</p>
+                </div>
+
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-tasks"></i> What We Did This Week</p>
+                    <ul class="work-list">
+                        <li>Initiated <strong>Phase 2: System Design</strong>, focusing heavily on the VLC downlink required to transmit environmental control data to the end nodes.</li>
+                        <li>Researched serial data transmission mechanisms using microcontrollers (such as Arduino and MSP430) over a visible light medium.</li>
+                        <li>Designed the <strong>Transmitter Block</strong>: Identified the necessity of USB to UART modules, transistor-based driving circuits (e.g., 2N2222 or 2N401), and high-power LEDs capable of rapid modulation.</li>
+                        <li>Designed the <strong>Receiver Block</strong>: Selected photodiode receivers (e.g., MRD500) paired with transimpedance or inverting amplifiers (e.g., LM393/LM358) and voltage comparators to reconstruct the weak optical signals.</li>
+                        <li>Analyzed how to convert light signals back into reliable electrical TTL logic levels that the receiving microcontroller's UART pins can interpret.</li>
+                        <li>Reviewed practical reference models for VLC hardware setups to better understand real-world limitations, such as ambient light interference and line-of-sight constraints.</li>
+                    </ul>
+                </div>
+
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-microchip"></i> Identified Hardware Components</p>
+                    <table class="env-table">
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th>Component</th>
+                                <th>Purpose in System</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Transmitter</strong></td>
+                                <td>Microcontroller (e.g., Arduino)</td>
+                                <td>Generates and outputs the serial data payload to be transmitted.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Transmitter</strong></td>
+                                <td>LED Driver / Switching Transistor</td>
+                                <td>Acts as a high-speed switch to modulate the LED based on the UART digital signal.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Transmitter</strong></td>
+                                <td>High-Power LED</td>
+                                <td>Converts the modulated electrical signal into rapid visible light variations.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Receiver</strong></td>
+                                <td>Photodiode (e.g., MRD500)</td>
+                                <td>Detects the variations in visible light and converts them back into a micro-current.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Receiver</strong></td>
+                                <td>Transimpedance / Inverting Amp</td>
+                                <td>Amplifies the extremely weak photodiode current into a usable, measurable voltage level.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Receiver</strong></td>
+                                <td>Voltage Comparator</td>
+                                <td>Squares the amplified analog signal back into clean digital logic (0s and 1s) for the receiver board.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-bookmark"></i> References & Study Materials</p>
+                    <ul class="work-list">
+                        <li style="align-items: flex-start;">
+                            <i class="fab fa-youtube" style="color: #ff0000; margin-top: 4px; font-size: 1.3rem;"></i>
+                            <div>
+                                <strong style="color: var(--dark);">VLC system for serial data transmission using Arduino board</strong><br>
+                                <span style="font-size: 0.85rem; color: #555; display: block; margin-top: 4px; margin-bottom: 6px;">Majed Basha (Basha). Explores a practical VLC system built using Arduino boards capable of continuous serial data transmission using LED drivers and transimpedance amplifiers.</span>
+                                <a href="https://www.youtube.com/watch?v=ZFaZ8ZQzy3o" target="_blank" style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-decoration: none;">Watch Video &rarr;</a>
+                            </div>
+                        </li>
+                        <li style="align-items: flex-start;">
+                            <i class="fab fa-youtube" style="color: #ff0000; margin-top: 4px; font-size: 1.3rem;"></i>
+                            <div>
+                                <strong style="color: var(--dark);">Engineering Final year project - Visible light communication (Li-fi)</strong><br>
+                                <span style="font-size: 0.85rem; color: #555; display: block; margin-top: 4px; margin-bottom: 6px;">satiz Kmr. Demonstrates multiple prototype models for VLC, covering detailed hardware circuits including USB-to-UART modules, driving transistors, photodiodes, and operational amplifiers.</span>
+                                <a href="https://www.youtube.com/watch?v=sHAvJImYw3w" target="_blank" style="font-size: 0.8rem; color: var(--primary); font-weight: 600; text-decoration: none;">Watch Video &rarr;</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-footer">
+                    <a href="week2.html" class="nav-btn prev"><i class="fas fa-arrow-left"></i> Week 2: Farm Visit</a>
+                    <span style="font-size:0.82rem; color:#aaa;">Week 3 of 14</span>
+                    <a href="index.html#timeline" class="nav-btn next">Back to Timeline <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Week Info</p>
+                    <div class="info-row"><span>Phase</span><span>System Design</span></div>
+                    <div class="info-row"><span>Duration</span><span>Week 3 of 14</span></div>
+                    <div class="info-row"><span>Period</span><span>Mar 2026</span></div>
+                    <div class="info-row"><span>Status</span><span style="color:var(--primary);">✓ Completed</span></div>
+                    <div class="info-row"><span>Location</span><span>Hardware Lab</span></div>
+                    <div class="info-row"><span>Components Selected</span><span style="color:var(--primary);">✓ Confirmed</span></div>
+                    <div class="info-row"><span>Circuit Schematics</span><span style="color:#ffc107;">⏳ Drafting</span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Jump to Week</p>
+                    <div class="week-nav">
+                        <a href="week1.html" class="week-btn done" title="Week 1 - Literature Review">1</a>
+                        <a href="week2.html" class="week-btn done" title="Week 2 - Farm Visit">2</a>
+                        <a href="week3.html" class="week-btn done active-week" title="Week 3 - System Design">3</a>
+                        <span class="week-btn upcoming" title="Week 4">4</span>
+                        <span class="week-btn upcoming" title="Week 5">5</span>
+                        <span class="week-btn upcoming" title="Week 6">6</span>
+                        <span class="week-btn upcoming" title="Week 7">7</span>
+                        <span class="week-btn upcoming" title="Week 8">8</span>
+                        <span class="week-btn upcoming" title="Week 9">9</span>
+                        <span class="week-btn upcoming" title="Week 10">10</span>
+                        <span class="week-btn upcoming" title="Week 11">11</span>
+                        <span class="week-btn upcoming" title="Week 12">12</span>
+                        <span class="week-btn upcoming" title="Week 13">13</span>
+                        <span class="week-btn upcoming" title="Week 14">14</span>
+                    </div>
+                    <p style="font-size:0.72rem; color:#aaa; margin-top:12px; margin-bottom:0;">🟢 Completed &nbsp; ⬜ Upcoming</p>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Design Specs</p>
+                    <div class="info-row"><span>Tx Architecture</span><span>Microcontroller + LED Driver</span></div>
+                    <div class="info-row"><span>Rx Architecture</span><span>Photodiode + Op-Amp</span></div>
+                    <div class="info-row"><span>Communication</span><span>Serial (UART)</span></div>
+                    <div class="info-row"><span>Status</span><span style="color:var(--primary); font-weight:700;">✓ Component List Finalized</span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Team</p>
+                    <div style="font-size:0.82rem;">
+                        <div class="info-row"><span>DELAI A.M.R.A.N.</span><span style="color:var(--primary);">E/21/081</span></div>
+                        <div class="info-row"><span>DISANAYAKE A.M.R.M.</span><span style="color:var(--primary);">E/21/103</span></div>
+                        <div class="info-row"><span>LAKSHANI M.B.N.W.</span><span style="color:var(--primary);">E/21/234</span></div>
+                        <div class="info-row"><span>Supervisor</span><span style="color:var(--primary);">Himal A. Suraweera</span></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card" style="background: var(--dark); color:#fff;">
+                    <p class="sidebar-title" style="color:var(--secondary);">Project</p>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.7); margin-bottom:10px;">Intelligent Greenhouse Monitoring System Based on IoT and Machine Learning</p>
+                    <p style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin:0;">Engineering · University of Peradeniya · 2025–2026</p>
+                    <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">VLC</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">LoRa</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">CNN</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">IoT</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
