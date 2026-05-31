@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4 — Wavelength Research & LED Configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1a0f;
+    --surface: #132015;
+    --surface2: #1a2e1d;
+    --surface3: #0f1c12;
+    --border: rgba(99,153,34,0.18);
+    --border-strong: rgba(99,153,34,0.35);
+    --text-primary: #e8f5d8;
+    --text-secondary: #8ab868;
+    --text-muted: #5a7a42;
+    --accent: #7ec832;
+    --accent2: #1D9E75;
+    --blue: #60a8f0;
+    --blue-bg: rgba(55,138,221,0.1);
+    --blue-border: rgba(55,138,221,0.3);
+    --green-c: #6ecc5a;
+    --green-bg: rgba(99,153,34,0.1);
+    --green-border: rgba(99,153,34,0.3);
+    --white-c: #d8e8f5;
+    --white-bg: rgba(180,210,240,0.08);
+    --white-border: rgba(180,210,240,0.25);
+    --red-c: #f07070;
+    --red-bg: rgba(200,60,60,0.1);
+    --red-border: rgba(200,60,60,0.3);
+    --amber: #FAC775;
+    --amber-bg: rgba(186,117,23,0.1);
+    --amber-border: rgba(186,117,23,0.3);
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .header-nav { display: flex; gap: 2rem; list-style: none; }
+  .header-nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; letter-spacing: 0.04em; transition: color 0.2s; }
+  .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+  .week-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(126,200,50,0.12); border: 1px solid rgba(126,200,50,0.3); color: var(--accent); padding: 4px 10px; border-radius: 4px; }
+
+  /* Hero */
+  .hero {
+    padding: 5rem 3rem 3rem; max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: end;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hero-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--text-muted); }
+  .hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.75rem; }
+  .hero-title span { color: var(--accent); }
+  .hero-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 560px; }
+  .hero-meta { text-align: right; }
+  .hero-week-num { font-family: 'Syne', sans-serif; font-size: 7rem; font-weight: 800; color: rgba(126,200,50,0.06); line-height: 1; letter-spacing: -0.05em; user-select: none; }
+  .hero-date { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: -1rem; }
+
+  /* Layout */
+  .main { max-width: 1100px; margin: 0 auto; padding: 3rem 3rem 5rem; display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start; }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+  .body-text { font-size: 14.5px; color: var(--text-secondary); line-height: 1.75; }
+  .body-text p + p { margin-top: 0.75rem; }
+
+  /* Wavelength cards */
+  .wavelength-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+  .wl-card {
+    border-radius: 12px; padding: 1.2rem 1.3rem;
+    border: 1px solid; position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .wl-card:hover { transform: translateY(-2px); }
+  .wl-card.blue { background: var(--blue-bg); border-color: var(--blue-border); }
+  .wl-card.green-c { background: var(--green-bg); border-color: var(--green-border); }
+  .wl-card.white-c { background: var(--white-bg); border-color: var(--white-border); }
+  .wl-card.red-c { background: var(--red-bg); border-color: var(--red-border); }
+
+  .wl-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .wl-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .wl-dot.blue { background: var(--blue); box-shadow: 0 0 8px rgba(96,168,240,0.5); }
+  .wl-dot.green-c { background: var(--green-c); box-shadow: 0 0 8px rgba(110,204,90,0.5); }
+  .wl-dot.white-c { background: #d8e8f5; box-shadow: 0 0 8px rgba(216,232,245,0.4); }
+  .wl-dot.red-c { background: var(--red-c); box-shadow: 0 0 8px rgba(240,112,112,0.5); }
+
+  .wl-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+  .wl-name.blue { color: var(--blue); }
+  .wl-name.green-c { color: var(--green-c); }
+  .wl-name.white-c { color: var(--white-c); }
+  .wl-name.red-c { color: var(--red-c); }
+
+  .wl-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); margin-left: auto; }
+  .wl-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .wl-verdict {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    padding: 3px 9px; border-radius: 4px; font-weight: 500;
+  }
+  .wl-verdict.best { background: rgba(126,200,50,0.15); color: var(--accent); border: 1px solid rgba(126,200,50,0.3); }
+  .wl-verdict.good { background: rgba(29,158,117,0.15); color: var(--accent2); border: 1px solid rgba(29,158,117,0.3); }
+  .wl-verdict.ok { background: rgba(180,210,240,0.1); color: var(--white-c); border: 1px solid rgba(180,210,240,0.2); }
+  .wl-verdict.avoid { background: var(--red-bg); color: var(--red-c); border: 1px solid var(--red-border); }
+
+  /* Photoperiod table */
+  .period-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 1rem; }
+  .period-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .period-card.featured { border-color: var(--accent); background: rgba(126,200,50,0.05); }
+  .period-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 3px; display: inline-block; width: fit-content; }
+  .period-tag.yield { background: rgba(126,200,50,0.12); color: var(--accent); }
+  .period-tag.size { background: rgba(96,168,240,0.12); color: var(--blue); }
+  .period-tag.baseline { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+  .period-cycle {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem;
+    color: var(--text-primary); letter-spacing: -0.02em; line-height: 1;
+  }
+  .period-cycle span { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .period-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .period-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* Visual cycle bar */
+  .cycle-visual { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .cycle-on { background: var(--accent); }
+  .cycle-off { background: rgba(255,255,255,0.06); }
+
+  /* Testing setup */
+  .setup-block {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; margin-top: 1rem;
+  }
+  .setup-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
+
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .setup-group { }
+  .setup-group-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-bottom: 8px; }
+  .setup-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+  .setup-bullet { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
+  .setup-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .setup-text strong { color: var(--text-primary); font-weight: 500; }
+
+  .circuit-note {
+    margin-top: 1.25rem; padding: 1rem 1.2rem;
+    background: var(--surface2); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .circuit-note strong { color: var(--accent); font-weight: 500; }
+
+  /* Stage note */
+  .stage-note {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--amber-bg); border: 1px solid var(--amber-border);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-top: 1rem;
+  }
+  .stage-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .stage-text { font-size: 13px; color: #d4943a; line-height: 1.6; }
+  .stage-text strong { color: var(--amber); font-weight: 500; }
+
+  /* References */
+  .ref-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .ref-item { border-left: 2px solid var(--border-strong); padding-left: 12px; }
+  .ref-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+  .ref-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .ref-journal { font-style: italic; color: var(--text-muted); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .sidebar-card-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  .progress-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-item:last-child { margin-bottom: 0; }
+  .progress-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); }
+  .progress-check.done { background: rgba(126,200,50,0.12); border-color: var(--accent); }
+  .progress-check.inprogress { border-color: #d4943a; color: #d4943a; background: rgba(186,117,23,0.1); }
+  .progress-label { font-size: 13px; color: var(--text-secondary); }
+
+  .week-nav { display: flex; flex-direction: column; gap: 6px; }
+  .week-nav-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .week-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .week-dot.current { background: var(--accent); }
+  .week-dot.done { background: var(--text-muted); }
+  .week-nav-label { font-size: 12.5px; color: var(--text-muted); }
+  .week-nav-item.current .week-nav-label { color: var(--text-primary); font-weight: 500; }
+
+  /* Wavelength quick-ref in sidebar */
+  .wl-quick { display: flex; flex-direction: column; gap: 8px; }
+  .wl-row { display: flex; align-items: center; gap: 10px; }
+  .wl-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .wl-row-label { font-size: 12.5px; color: var(--text-secondary); flex: 1; }
+  .wl-row-verdict { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    .header { padding: 0 1.25rem; }
+    .hero { grid-template-columns: 1fr; padding: 2.5rem 1.25rem 2rem; }
+    .hero-meta { display: none; }
+    .main { grid-template-columns: 1fr; padding: 2rem 1.25rem 3rem; }
+    .wavelength-grid, .period-grid, .setup-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">FYP Portfolio</div>
+  <nav><ul class="header-nav">
+    <li><a href="#">Overview</a></li>
+    <li><a href="#" class="active">Weekly Log</a></li>
+    <li><a href="#">System Design</a></li>
+    <li><a href="#">References</a></li>
+  </ul></nav>
+  <span class="week-badge">Week 04</span>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="hero-label">Weekly Progress Log</p>
+    <h1 class="hero-title">Wavelength Research<br>&amp; <span>LED Configuration</span></h1>
+    <p class="hero-subtitle">Investigating optimal LED wavelengths for oyster mushroom cultivation, determining on/off photoperiod cycles, and designing a multi-wavelength test setup for empirical validation.</p>
+  </div>
+  <div class="hero-meta">
+    <div class="hero-week-num">04</div>
+    <p class="hero-date">May 2026</p>
+  </div>
+</section>
+
+<div class="main">
+  <div>
+
+    <!-- Intro -->
+    <div class="section">
+      <p class="section-label">// Overview</p>
+      <h2 class="section-title">Research Focus This Week</h2>
+      <div class="body-text">
+        <p>This week we shifted focus from communication hardware to the agricultural side of the system — specifically, what wavelengths of light actually benefit oyster mushroom cultivation and at what duty cycles. Since our VLC downlink uses visible LEDs as the data carrier, the LED choice has a dual role: communication signal and biological stimulation. Getting the wavelength right means we can serve both purposes simultaneously.</p>
+        <p>We reviewed published studies on the effects of LED colour on white oyster mushroom yield and physical characteristics, and used these findings to determine the photoperiod settings we will test in our system. We also designed a multi-wavelength testing setup to experimentally validate the configurations before integrating them into the final build.</p>
+      </div>
+    </div>
+
+    <!-- Wavelengths -->
+    <div class="section">
+      <p class="section-label">// Wavelength Research</p>
+      <h2 class="section-title">Optimal Wavelengths for Growth</h2>
+      <div class="body-text">
+        <p>Based on literature, four wavelength ranges were evaluated for their effect on total fresh weight, cap diameter, stem thickness, and time-to-pinhead emergence.</p>
+      </div>
+
+      <div class="wavelength-grid">
+
+        <div class="wl-card blue">
+          <div class="wl-header">
+            <div class="wl-dot blue"></div>
+            <span class="wl-name blue">Blue LED</span>
+            <span class="wl-nm">~475 nm</span>
+          </div>
+          <p class="wl-desc">Most effective wavelength overall. Yields the highest total fresh weight, largest mushroom caps (pileus diameter), and thickest stems. Strongly recommended as the primary light source.</p>
+          <span class="wl-verdict best">★ Best for yield &amp; size</span>
+        </div>
+
+        <div class="wl-card green-c">
+          <div class="wl-header">
+            <div class="wl-dot green-c"></div>
+            <span class="wl-name green-c">Green LED</span>
+            <span class="wl-nm">515–530 nm</span>
+          </div>
+          <p class="wl-desc">Highly effective for accelerating the reproductive stage — significantly shortens the time for pinheads to emerge and fruiting bodies to form. Good candidate for early fruiting stimulation.</p>
+          <span class="wl-verdict good">✓ Best for fast pinning</span>
+        </div>
+
+        <div class="wl-card white-c">
+          <div class="wl-header">
+            <div class="wl-dot white-c"></div>
+            <span class="wl-name white-c">White LED</span>
+            <span class="wl-nm">Broad spectrum</span>
+          </div>
+          <p class="wl-desc">Broad spectrum that accelerates pinhead emergence and supports strong overall yields. Practical choice as it doubles as room illumination and is widely available. Selected for VLC integration.</p>
+          <span class="wl-verdict ok">◎ Practical &amp; versatile</span>
+        </div>
+
+        <div class="wl-card red-c">
+          <div class="wl-header">
+            <div class="wl-dot red-c"></div>
+            <span class="wl-name red-c">Red LED</span>
+            <span class="wl-nm">~660 nm</span>
+          </div>
+          <p class="wl-desc">Should be avoided during the fruiting phase — suppresses growth, reduces total yield, and causes elongated lower-quality stems. May temporarily promote early mycelium growth but not recommended for general use.</p>
+          <span class="wl-verdict avoid">✕ Avoid — reduces yield</span>
+        </div>
+
+      </div>
+
+      <div class="stage-note">
+        <span class="stage-icon">⚠</span>
+        <p class="stage-text"><strong>Stage-specific requirement:</strong> LED light should only be applied during the <strong>reproductive stage</strong> (when fruiting bodies are forming). Applying light during the vegetative/mycelium colonisation phase is not recommended and may cause adverse effects.</p>
+      </div>
+    </div>
+
+    <!-- Photoperiods -->
+    <div class="section">
+      <p class="section-label">// On/Off Cycles</p>
+      <h2 class="section-title">Recommended Photoperiods</h2>
+      <div class="body-text">
+        <p>Three photoperiod configurations were identified from the literature. Each is optimised for a different cultivation goal and will be tested independently in the experimental setup.</p>
+      </div>
+
+      <div class="period-grid">
+
+        <div class="period-card featured">
+          <span class="period-tag yield">Max Yield</span>
+          <div class="period-cycle">3h <span>ON</span> / 21h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:12.5%"></div>
+            <div class="cycle-off" style="width:87.5%"></div>
+          </div>
+          <p class="period-label">Highest fruiting body count</p>
+          <p class="period-desc">Produces the highest total fresh weight and greatest number of individual fruiting bodies per flush. Best for quantity-focused cultivation.</p>
+        </div>
+
+        <div class="period-card">
+          <span class="period-tag size">Max Size</span>
+          <div class="period-cycle">15h <span>ON</span> / 9h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:62.5%"></div>
+            <div class="cycle-off" style="width:37.5%"></div>
+          </div>
+          <p class="period-label">Largest cap &amp; stem diameter</p>
+          <p class="period-desc">Produces commercial-grade mushrooms with the largest cap diameters and thickest stems. Best for size and appearance quality.</p>
+        </div>
+
+        <div class="period-card">
+          <span class="period-tag baseline">Baseline</span>
+          <div class="period-cycle">12h <span>ON</span> / 12h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:50%"></div>
+            <div class="cycle-off" style="width:50%"></div>
+          </div>
+          <p class="period-label">Standard control cycle</p>
+          <p class="period-desc">Standard 12/12 cycle providing stable, consistent results. Used as the control baseline for comparing the other two configurations during testing.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Testing Setup -->
+    <div class="section">
+      <p class="section-label">// Experimental Design</p>
+      <h2 class="section-title">Multi-Wavelength Testing Setup</h2>
+      <div class="body-text">
+        <p>To empirically validate the wavelength and photoperiod findings before integrating them into the full automated system, we designed the following comparative test setup. Three isolated mushroom cultivation boxes will run simultaneously under different LED configurations, monitored by the Arduino-based control system.</p>
+      </div>
+
+      <div class="setup-block">
+        <p class="setup-title">// Test Configuration</p>
+        <div class="setup-grid">
+
+          <div class="setup-group">
+            <p class="setup-group-title">Test Units</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit A:</strong> Blue LED (~475 nm) — 3h ON / 21h OFF</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit B:</strong> White LED — 15h ON / 9h OFF</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit C (Control):</strong> White LED — 12h ON / 12h OFF</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Measurement Metrics</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Total fresh weight per flush (grams)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Cap (pileus) diameter (mm)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Stem (stipe) thickness (mm)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Days to pinhead emergence</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Control Variables</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Temperature: 24–28°C</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Humidity: 80–90% RH</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Substrate: identical substrate blocks</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Strain: white oyster (<em>Pleurotus ostreatus</em>)</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Hardware Used</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Arduino Uno — timer &amp; LED control</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Blue, white high-brightness LEDs</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">DHT22 — temperature &amp; humidity sensor</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">NPN transistor driver circuits (per week 3)</p></div>
+          </div>
+
+        </div>
+
+        <div class="circuit-note">
+          <strong>Circuit note:</strong> The LED driver circuit designed in Week 3 (Arduino → NPN transistor → LED) will be used for all test units. The Arduino's digital output timer controls the on/off cycling. A circuit diagram has been prepared and will be included as a supplementary document.
+        </div>
+        <div style="margin-top:1.5rem;">
+          <p class="setup-title" style="margin-bottom:1rem;">// LED Placement Design Diagram</p>
+          <div style="background:var(--surface3);border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;">
+            <img src="data:image/jpeg;base64,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" alt="LED placement design diagram showing ceiling Blue ~475nm strip and under-shelf Green 515-530nm LEDs across 3x3 mushroom bag rack" style="width:100%;display:block;" />
+            <div style="padding:0.85rem 1.2rem;border-top:1px solid var(--border);">
+              <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);margin:0;line-height:1.7;">
+                <span style="color:#60a8f0;">■</span> Ceiling strip — Blue ~475 nm &nbsp;|&nbsp;
+                <span style="color:#6ecc5a;">■</span> Under-shelf — Green 515–530 nm &nbsp;|&nbsp;
+                Rack: ~500 mm tall × ~550 mm wide &nbsp;|&nbsp; 9 bags (3×3 layout)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div class="section">
+      <p class="section-label">// References</p>
+      <h2 class="section-title">Research References</h2>
+      <ul class="ref-list">
+        <li class="ref-item">
+          <p class="ref-num">[1]</p>
+          <p class="ref-text">S. N. F. Abdullah, H. Yusoff, K. M. Hyie, S. Budin, and S. M. F. S. A. Nasir, "Effects of various LED light colours on yield and physical characteristics of white oyster mushrooms," <span class="ref-journal">ESTEEM Academic Journal</span>, vol. 19, pp. 23–36, Sep. 2023.</p>
+        </li>
+        <li class="ref-item">
+          <p class="ref-num">[2]</p>
+          <p class="ref-text">S. N. F. Abdullah, H. Yusoff, and S. M. F. S. A. Nasir, "Enhancing white oyster mushroom cultivation through light stimulation using white LED," <span class="ref-journal">Jurnal Mekanikal</span>, vol. 46, pp. 122–132, Dec. 2023.</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Week 4 Checklist</p>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Wavelength literature review</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Blue LED identified as primary</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Photoperiod cycles determined</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Stage-specific rule noted</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Test setup designed (3 units)</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Circuit diagram prepared</span></div>
+      <div class="progress-item"><div class="progress-check inprogress">→</div><span class="progress-label">Hardware procurement</span></div>
+      <div class="progress-item"><div class="progress-check"></div><span class="progress-label">Test unit assembly</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Wavelength Quick Ref</p>
+      <div class="wl-quick">
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--blue);"></div>
+          <span class="wl-row-label">Blue ~475 nm</span>
+          <span class="wl-row-verdict" style="color:var(--accent);">★ Best yield</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--green-c);"></div>
+          <span class="wl-row-label">Green 515–530 nm</span>
+          <span class="wl-row-verdict" style="color:var(--accent2);">Fast pin</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--white-c);"></div>
+          <span class="wl-row-label">White broad</span>
+          <span class="wl-row-verdict">Versatile</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--red-c);"></div>
+          <span class="wl-row-label">Red ~660 nm</span>
+          <span class="wl-row-verdict" style="color:var(--red-c);">✕ Avoid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Project Timeline</p>
+      <div class="week-nav">
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 1 — Scoping &amp; planning</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 2 — Farm visit</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 3 — VLC downlink design</span></div>
+        <div class="week-nav-item current"><span class="week-dot current"></span><span class="week-nav-label">Week 4 — Wavelength research</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 5 — Hardware procurement</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 6 — Circuit prototyping</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>System Context</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Project</span>
+          <span style="font-size:12px;color:var(--text-primary);font-weight:500">Auto Mushroom Cultivation</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Primary LED</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue)">Blue ~475 nm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Max yield cycle</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent)">3h / 21h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Max size cycle</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue)">15h / 9h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+          <span style="font-size:12px;color:var(--text-muted)">Test units</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary)">3 parallel setups</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:1.5rem 3rem;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">Week 04 / FYP Weekly Log</span>
+  <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted)">Automated Mushroom Cultivation System</span>
+</footer>
+
+</body>
+</html>
