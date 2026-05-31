@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 5 — Machine Learning Foundations</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1a0f;
+    --surface: #132015;
+    --surface2: #1a2e1d;
+    --surface3: #0f1c12;
+    --border: rgba(99,153,34,0.18);
+    --border-strong: rgba(99,153,34,0.35);
+    --text-primary: #e8f5d8;
+    --text-secondary: #8ab868;
+    --text-muted: #5a7a42;
+    --accent: #7ec832;
+    --accent2: #1D9E75;
+    --blue: #60a8f0;
+    --blue-bg: rgba(55,138,221,0.09);
+    --blue-border: rgba(55,138,221,0.28);
+    --purple: #b48af0;
+    --purple-bg: rgba(140,100,230,0.09);
+    --purple-border: rgba(140,100,230,0.28);
+    --amber: #FAC775;
+    --amber-bg: rgba(186,117,23,0.1);
+    --amber-border: rgba(186,117,23,0.3);
+    --teal: #1D9E75;
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 3rem; display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .header-nav { display: flex; gap: 2rem; list-style: none; }
+  .header-nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; letter-spacing: 0.04em; transition: color 0.2s; }
+  .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+  .week-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(126,200,50,0.12); border: 1px solid rgba(126,200,50,0.3); color: var(--accent); padding: 4px 10px; border-radius: 4px; }
+
+  /* Hero */
+  .hero {
+    padding: 5rem 3rem 3rem; max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: end;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hero-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--text-muted); }
+  .hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.75rem; }
+  .hero-title span { color: var(--accent); }
+  .hero-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 560px; }
+  .hero-meta { text-align: right; }
+  .hero-week-num { font-family: 'Syne', sans-serif; font-size: 7rem; font-weight: 800; color: rgba(126,200,50,0.06); line-height: 1; letter-spacing: -0.05em; user-select: none; }
+  .hero-date { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: -1rem; }
+
+  /* Layout */
+  .main { max-width: 1100px; margin: 0 auto; padding: 3rem 3rem 5rem; display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start; }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+  .body-text { font-size: 14.5px; color: var(--text-secondary); line-height: 1.75; }
+  .body-text p + p { margin-top: 0.75rem; }
+
+  /* ML concept cards */
+  .ml-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+  .ml-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem 1.3rem;
+    position: relative; overflow: hidden; transition: border-color 0.2s;
+  }
+  .ml-card:hover { border-color: var(--border-strong); }
+  .ml-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .ml-card:hover::after { opacity: 1; }
+  .ml-card.nn::after { background: var(--purple); }
+  .ml-card.bp::after { background: var(--blue); }
+  .ml-card.act::after { background: var(--accent); }
+  .ml-card.opt::after { background: var(--amber); }
+  .ml-card.loss::after { background: #f07070; }
+  .ml-card.data::after { background: var(--accent2); }
+
+  .ml-card-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; margin-bottom: 10px;
+  }
+  .ml-card-icon.nn { background: var(--purple-bg); }
+  .ml-card-icon.bp { background: var(--blue-bg); }
+  .ml-card-icon.act { background: rgba(126,200,50,0.1); }
+  .ml-card-icon.opt { background: var(--amber-bg); }
+  .ml-card-icon.loss { background: rgba(200,60,60,0.1); }
+  .ml-card-icon.data { background: rgba(29,158,117,0.1); }
+
+  .ml-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 6px; }
+  .ml-card-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+
+  /* Neural network diagram */
+  .nn-diagram {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;
+  }
+  .nn-diagram-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
+
+  .nn-layers { display: flex; align-items: center; justify-content: space-between; gap: 0; position: relative; }
+  .nn-layer { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; }
+  .nn-layer-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 4px; }
+  .nn-nodes { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .nn-node {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid; display: flex; align-items: center;
+    justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+  }
+  .nn-node.input { border-color: var(--accent2); background: rgba(29,158,117,0.12); color: var(--accent2); }
+  .nn-node.hidden { border-color: var(--purple); background: var(--purple-bg); color: var(--purple); }
+  .nn-node.output { border-color: var(--accent); background: rgba(126,200,50,0.12); color: var(--accent); }
+  .nn-node.ellipsis { border: none; background: transparent; color: var(--text-muted); font-size: 14px; width: 28px; height: 20px; }
+
+  .nn-connections {
+    flex: 1; position: relative; height: 180px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nn-arrow-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    color: var(--text-muted); text-align: center; letter-spacing: 0.05em;
+    writing-mode: vertical-rl; transform: rotate(180deg);
+    opacity: 0.6;
+  }
+
+  .nn-io-labels { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .nn-io-label { font-size: 11px; color: var(--text-muted); text-align: center; }
+
+  /* Application cards */
+  .app-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 1rem; }
+  .app-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1rem 1.1rem;
+  }
+  .app-card-tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 3px; display: inline-block; margin-bottom: 8px; }
+  .app-card-tag.input-t { background: rgba(29,158,117,0.12); color: var(--accent2); }
+  .app-card-tag.process-t { background: var(--purple-bg); color: var(--purple); }
+  .app-card-tag.output-t { background: rgba(126,200,50,0.12); color: var(--accent); }
+  .app-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 5px; }
+  .app-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+  /* Paper review card */
+  .paper-card {
+    background: var(--surface); border: 1px solid var(--border-strong);
+    border-radius: 12px; padding: 1.4rem; margin-top: 1rem;
+  }
+  .paper-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 1rem; }
+  .paper-icon {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: rgba(29,158,117,0.12); border: 1px solid rgba(29,158,117,0.25);
+    display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0;
+  }
+  .paper-meta { flex: 1; }
+  .paper-journal { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 4px; }
+  .paper-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); line-height: 1.3; }
+  .paper-authors { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .paper-cite { font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: rgba(126,200,50,0.1); border: 1px solid rgba(126,200,50,0.2); color: var(--accent); padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+
+  .paper-findings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 0.75rem; }
+  .paper-finding { background: var(--surface2); border-radius: 8px; padding: 8px 10px; }
+  .paper-finding-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 4px; }
+  .paper-finding-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Learning journey */
+  .journey-steps { display: flex; flex-direction: column; gap: 0; margin-top: 1rem; position: relative; }
+  .journey-steps::before {
+    content: ''; position: absolute; left: 15px; top: 20px; bottom: 20px;
+    width: 1px; background: var(--border-strong);
+  }
+  .journey-step { display: flex; gap: 16px; align-items: flex-start; padding-bottom: 1.5rem; position: relative; }
+  .journey-step:last-child { padding-bottom: 0; }
+  .journey-num {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+    background: var(--surface2); border: 1px solid var(--border-strong);
+    color: var(--accent); position: relative; z-index: 1;
+  }
+  .journey-num.done { background: rgba(126,200,50,0.12); border-color: var(--accent); }
+  .journey-content { flex: 1; padding-top: 4px; }
+  .journey-title { font-size: 13.5px; font-weight: 500; color: var(--text-primary); margin-bottom: 3px; }
+  .journey-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.55; }
+
+  /* References */
+  .ref-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .ref-item { border-left: 2px solid var(--border-strong); padding-left: 12px; }
+  .ref-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+  .ref-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .ref-journal { font-style: italic; color: var(--text-muted); }
+  .ref-link { display: inline-flex; align-items: center; gap: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent2); text-decoration: none; margin-top: 4px; border-bottom: 1px solid rgba(29,158,117,0.3); padding-bottom: 1px; transition: color 0.2s; }
+  .ref-link:hover { color: var(--accent); border-color: rgba(126,200,50,0.4); }
+  .ref-doi { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .sidebar-card-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  .progress-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-item:last-child { margin-bottom: 0; }
+  .progress-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); }
+  .progress-check.done { background: rgba(126,200,50,0.12); border-color: var(--accent); }
+  .progress-check.inprogress { border-color: #d4943a; color: #d4943a; background: rgba(186,117,23,0.1); }
+  .progress-label { font-size: 13px; color: var(--text-secondary); }
+
+  .week-nav { display: flex; flex-direction: column; gap: 6px; }
+  .week-nav-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .week-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .week-dot.current { background: var(--accent); }
+  .week-dot.done { background: var(--text-muted); }
+  .week-nav-label { font-size: 12.5px; color: var(--text-muted); }
+  .week-nav-item.current .week-nav-label { color: var(--text-primary); font-weight: 500; }
+
+  /* ML concept pills */
+  .concept-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cpill { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 4px 9px; border-radius: 5px; border: 1px solid; }
+  .cpill.done { background: rgba(126,200,50,0.1); border-color: rgba(126,200,50,0.3); color: var(--accent); }
+  .cpill.learning { background: var(--purple-bg); border-color: var(--purple-border); color: var(--purple); }
+  .cpill.next { background: rgba(255,255,255,0.03); border-color: var(--border); color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    .header { padding: 0 1.25rem; }
+    .hero { grid-template-columns: 1fr; padding: 2.5rem 1.25rem 2rem; }
+    .hero-meta { display: none; }
+    .main { grid-template-columns: 1fr; padding: 2rem 1.25rem 3rem; }
+    .ml-grid, .app-grid, .paper-findings { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">FYP Portfolio</div>
+  <nav><ul class="header-nav">
+    <li><a href="#">Overview</a></li>
+    <li><a href="#" class="active">Weekly Log</a></li>
+    <li><a href="#">System Design</a></li>
+    <li><a href="#">References</a></li>
+  </ul></nav>
+  <span class="week-badge">Week 05</span>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="hero-label">Weekly Progress Log</p>
+    <h1 class="hero-title">Machine Learning<br><span>Foundations</span></h1>
+    <p class="hero-subtitle">Studying core machine learning concepts — neural networks, backpropagation, and training fundamentals — to support continued research into how LED wavelengths affect mushroom cultivation outcomes.</p>
+  </div>
+  <div class="hero-meta">
+    <div class="hero-week-num">05</div>
+    <p class="hero-date">May 2026</p>
+  </div>
+</section>
+
+<div class="main">
+  <div>
+
+    <!-- Motivation -->
+    <div class="section">
+      <p class="section-label">// Context</p>
+      <h2 class="section-title">Why Machine Learning?</h2>
+      <div class="body-text">
+        <p>Following the wavelength research in Week 4, we identified that the relationship between LED light conditions and mushroom yield is complex and multi-variable — it involves wavelength, photoperiod duration, environmental temperature, humidity, and growth stage simultaneously. A rule-based or threshold control system would be too rigid to optimise across all these variables.</p>
+        <p>This week we began studying machine learning fundamentals as the basis for building a predictive model that can learn from cultivation data — including sensor readings and yield measurements — and assist in recommending optimal LED configurations. The published work by Moysiadis et al. (2023) on ML-based mushroom growth monitoring directly validated this direction for our FYP.</p>
+      </div>
+    </div>
+
+    <!-- Core Concepts -->
+    <div class="section">
+      <p class="section-label">// ML Fundamentals</p>
+      <h2 class="section-title">Core Concepts Studied</h2>
+      <div class="body-text">
+        <p>The foundational concepts covered this week, primarily through the 3Blue1Brown neural network series, are outlined below.</p>
+      </div>
+
+      <div class="ml-grid">
+
+        <div class="ml-card nn">
+          <div class="ml-card-icon nn">🧠</div>
+          <div class="ml-card-title">Neural Networks</div>
+          <p class="ml-card-desc">Layered structures of interconnected nodes (neurons) that learn patterns in data. Each layer transforms its input, progressively building more abstract representations toward a final output.</p>
+        </div>
+
+        <div class="ml-card bp">
+          <div class="ml-card-icon bp">↩</div>
+          <div class="ml-card-title">Backpropagation</div>
+          <p class="ml-card-desc">The algorithm by which a neural network learns — it calculates how much each weight contributed to the output error, then adjusts weights in the direction that reduces that error.</p>
+        </div>
+
+        <div class="ml-card act">
+          <div class="ml-card-icon act">〜</div>
+          <div class="ml-card-title">Activation Functions</div>
+          <p class="ml-card-desc">Non-linear functions (ReLU, Sigmoid, Tanh) applied at each neuron, enabling the network to learn non-linear relationships — essential for modelling the complex interactions between light and growth.</p>
+        </div>
+
+        <div class="ml-card opt">
+          <div class="ml-card-icon opt">⬇</div>
+          <div class="ml-card-title">Gradient Descent</div>
+          <p class="ml-card-desc">The optimisation method used to minimise the loss function. Weights are iteratively nudged in the direction of steepest descent on the loss surface to improve model accuracy over training epochs.</p>
+        </div>
+
+        <div class="ml-card loss">
+          <div class="ml-card-icon loss">📉</div>
+          <div class="ml-card-title">Loss Functions</div>
+          <p class="ml-card-desc">Metrics that quantify how far the model's predictions are from the true values. Mean Squared Error (MSE) is particularly relevant for regression tasks like predicting mushroom yield from sensor data.</p>
+        </div>
+
+        <div class="ml-card data">
+          <div class="ml-card-icon data">⚙</div>
+          <div class="ml-card-title">Training & Validation</div>
+          <p class="ml-card-desc">The process of splitting data into training and validation sets, fitting the model on training data, then evaluating generalisation on unseen validation data to detect overfitting.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NN Architecture diagram -->
+    <div class="section">
+      <p class="section-label">// Architecture</p>
+      <h2 class="section-title">Proposed Model Input / Output</h2>
+      <div class="body-text">
+        <p>Based on the Moysiadis et al. paper and our own sensor plan, a preliminary neural network structure was mapped out for the cultivation monitoring model.</p>
+      </div>
+
+      <div class="nn-diagram">
+        <p class="nn-diagram-title">// Input → hidden layers → output</p>
+        <div class="nn-layers">
+
+          <!-- Input layer -->
+          <div class="nn-layer">
+            <span class="nn-layer-label">Input layer</span>
+            <div class="nn-nodes">
+              <div class="nn-node input">T</div>
+              <div class="nn-node input">H</div>
+              <div class="nn-node input">λ</div>
+              <div class="nn-node input">D</div>
+              <div class="nn-node input">S</div>
+            </div>
+            <div class="nn-io-labels">
+              <div class="nn-io-label">Temp</div>
+              <div class="nn-io-label">Humidity</div>
+              <div class="nn-io-label">Wavelength</div>
+              <div class="nn-io-label">Duty cycle</div>
+              <div class="nn-io-label">Growth stage</div>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div style="display:flex;align-items:center;padding:0 8px;padding-bottom:48px;">
+            <span style="color:var(--text-muted);font-size:20px;">→</span>
+          </div>
+
+          <!-- Hidden 1 -->
+          <div class="nn-layer">
+            <span class="nn-layer-label">Hidden 1</span>
+            <div class="nn-nodes">
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;padding:0 8px;padding-bottom:48px;">
+            <span style="color:var(--text-muted);font-size:20px;">→</span>
+          </div>
+
+          <!-- Hidden 2 -->
+          <div class="nn-layer">
+            <span class="nn-layer-label">Hidden 2</span>
+            <div class="nn-nodes">
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+              <div class="nn-node hidden"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;padding:0 8px;padding-bottom:48px;">
+            <span style="color:var(--text-muted);font-size:20px;">→</span>
+          </div>
+
+          <!-- Output layer -->
+          <div class="nn-layer">
+            <span class="nn-layer-label">Output layer</span>
+            <div class="nn-nodes">
+              <div class="nn-node output">W</div>
+              <div class="nn-node output">Q</div>
+              <div class="nn-node output">R</div>
+            </div>
+            <div class="nn-io-labels">
+              <div class="nn-io-label">Yield weight</div>
+              <div class="nn-io-label">Quality score</div>
+              <div class="nn-io-label">Recommendation</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="margin-top:1.25rem;padding-top:1rem;border-top:0.5px solid var(--border);display:flex;gap:20px;flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);">Activation: ReLU (hidden) · Sigmoid/Linear (output)</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);">Optimiser: Adam · Loss: MSE</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);">Framework: TBD (Python / TensorFlow / sklearn)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ML Application to project -->
+    <div class="section">
+      <p class="section-label">// Application</p>
+      <h2 class="section-title">How ML Connects to the Cultivation System</h2>
+      <div class="body-text">
+        <p>Machine learning is not just an academic study for this week — it maps directly onto the three functional stages of our automated system.</p>
+      </div>
+      <div class="app-grid">
+        <div class="app-card">
+          <span class="app-card-tag input-t">Inputs</span>
+          <div class="app-card-title">Sensor Data Collection</div>
+          <p class="app-card-desc">Temperature, humidity, CO₂, and growth stage data collected by sensors inside the mushroom house are fed as features into the model.</p>
+        </div>
+        <div class="app-card">
+          <span class="app-card-tag process-t">Processing</span>
+          <div class="app-card-title">Wavelength Effect Prediction</div>
+          <p class="app-card-desc">The trained neural network predicts expected yield and quality for different LED wavelength and photoperiod combinations given the current environmental conditions.</p>
+        </div>
+        <div class="app-card">
+          <span class="app-card-tag output-t">Outputs</span>
+          <div class="app-card-title">LED Control Recommendation</div>
+          <p class="app-card-desc">The model's output drives the downlink VLC signal — adjusting LED colour, intensity, and duty cycle automatically to optimise cultivation outcomes in real time.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paper review -->
+    <div class="section">
+      <p class="section-label">// Key Paper Review</p>
+      <h2 class="section-title">Moysiadis et al. (2023) — Findings</h2>
+
+      <div class="paper-card">
+        <div class="paper-header">
+          <div class="paper-icon">📄</div>
+          <div class="paper-meta">
+            <p class="paper-journal">Agriculture · MDPI · 2023</p>
+            <p class="paper-title">Monitoring Mushroom Growth with Machine Learning</p>
+            <p class="paper-authors">Moysiadis, V., Kokkonis, G., Bibi, S., et al.</p>
+          </div>
+          <span class="paper-cite">Cited: 59</span>
+        </div>
+
+        <div class="paper-findings">
+          <div class="paper-finding">
+            <p class="paper-finding-label">Approach</p>
+            <p class="paper-finding-text">Used ML models to monitor and predict mushroom growth parameters from environmental sensor data, demonstrating feasibility of data-driven cultivation management.</p>
+          </div>
+          <div class="paper-finding">
+            <p class="paper-finding-label">Sensors Used</p>
+            <p class="paper-finding-text">Temperature, humidity, CO₂ concentration, and image-based growth measurements — closely aligned with our planned sensor configuration.</p>
+          </div>
+          <div class="paper-finding">
+            <p class="paper-finding-label">Relevance to FYP</p>
+            <p class="paper-finding-text">Validates our approach of combining sensor data with ML for automated cultivation decisions. Provides a model architecture reference for our wavelength-optimisation component.</p>
+          </div>
+          <div class="paper-finding">
+            <p class="paper-finding-label">Key Takeaway</p>
+            <p class="paper-finding-text">ML-based monitoring outperformed static threshold rules in maintaining optimal growth conditions, supporting the use of adaptive ML over fixed rules in our system.</p>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem;padding-top:0.75rem;border-top:0.5px solid var(--border);">
+          <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);">DOI: 10.3390/agriculture13010223</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Learning journey -->
+    <div class="section">
+      <p class="section-label">// Learning Path</p>
+      <h2 class="section-title">ML Study Progress</h2>
+      <div class="journey-steps">
+        <div class="journey-step">
+          <div class="journey-num done">1</div>
+          <div class="journey-content">
+            <p class="journey-title">What is a neural network?</p>
+            <p class="journey-desc">Layers, weights, biases, and how data flows forward through the network to produce a prediction (forward pass).</p>
+          </div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num done">2</div>
+          <div class="journey-content">
+            <p class="journey-title">Gradient descent and learning</p>
+            <p class="journey-desc">How the network minimises its loss by computing gradients with respect to each weight and nudging them in the downhill direction.</p>
+          </div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num done">3</div>
+          <div class="journey-content">
+            <p class="journey-title">Backpropagation — the math</p>
+            <p class="journey-desc">Chain rule derivation of how error signals propagate backwards through layers to update weights. Studied via 3Blue1Brown Chapter 3.</p>
+          </div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num done">4</div>
+          <div class="journey-content">
+            <p class="journey-title">Backpropagation — calculus notation</p>
+            <p class="journey-desc">Formal notation used in academic literature; understanding partial derivatives of the loss with respect to weights and activations.</p>
+          </div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num inprogress" style="border-color:#d4943a;color:#d4943a;background:rgba(186,117,23,0.1);">5</div>
+          <div class="journey-content">
+            <p class="journey-title">Practical implementation (in progress)</p>
+            <p class="journey-desc">Applying learned concepts in Python — building a simple network to understand the training loop before working with cultivation data.</p>
+          </div>
+        </div>
+        <div class="journey-step">
+          <div class="journey-num">6</div>
+          <div class="journey-content">
+            <p class="journey-title">Dataset design for mushroom cultivation</p>
+            <p class="journey-desc">Defining the feature set from our sensors and target outputs; planning data collection during the physical testing phase.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div class="section">
+      <p class="section-label">// References</p>
+      <h2 class="section-title">Research References</h2>
+      <ul class="ref-list">
+        <li class="ref-item">
+          <p class="ref-num">[1]</p>
+          <p class="ref-text">3Blue1Brown, "Neural networks," <span class="ref-journal">YouTube</span>, 2017. [Online].</p>
+          <a class="ref-link" href="https://youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" target="_blank">↗ youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi</a>
+        </li>
+        <li class="ref-item">
+          <p class="ref-num">[2]</p>
+          <p class="ref-text">V. Moysiadis, G. Kokkonis, S. Bibi, et al., "Monitoring Mushroom Growth with Machine Learning," <span class="ref-journal">Agriculture</span>, vol. 13, no. 1, p. 223, 2023.</p>
+          <p class="ref-doi">DOI: 10.3390/agriculture13010223 · Cited by: 59</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Week 5 Checklist</p>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Started 3Blue1Brown NN series</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Neural network basics understood</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Backpropagation studied</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Gradient descent understood</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Moysiadis et al. paper reviewed</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">ML–FYP integration mapped</span></div>
+      <div class="progress-item"><div class="progress-check inprogress">→</div><span class="progress-label">Python implementation (ongoing)</span></div>
+      <div class="progress-item"><div class="progress-check"></div><span class="progress-label">Dataset design for cultivation</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Concepts Covered</p>
+      <div class="concept-pills">
+        <span class="cpill done">Neural Networks</span>
+        <span class="cpill done">Forward Pass</span>
+        <span class="cpill done">Backprop</span>
+        <span class="cpill done">Gradient Descent</span>
+        <span class="cpill done">ReLU / Sigmoid</span>
+        <span class="cpill done">MSE Loss</span>
+        <span class="cpill done">Weights &amp; Biases</span>
+        <span class="cpill learning">Training Loop</span>
+        <span class="cpill learning">Python (NumPy)</span>
+        <span class="cpill next">CNN</span>
+        <span class="cpill next">Overfitting</span>
+        <span class="cpill next">Cross-validation</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent);">■ Done</span>
+        <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--purple);">■ In progress</span>
+        <span style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-muted);">■ Upcoming</span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Project Timeline</p>
+      <div class="week-nav">
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 1 — Scoping &amp; planning</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 2 — Farm visit</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 3 — VLC downlink design</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 4 — Wavelength research</span></div>
+        <div class="week-nav-item current"><span class="week-dot current"></span><span class="week-nav-label">Week 5 — ML foundations</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 6 — Circuit prototyping</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 7 — Dataset collection</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>System Context</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">ML role</span>
+          <span style="font-size:12px;color:var(--text-primary);font-weight:500">Yield prediction</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Model type</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--purple)">Neural Network</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Inputs</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent2)">T, H, λ, duty, stage</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Outputs</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent)">Yield · LED config</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+          <span style="font-size:12px;color:var(--text-muted)">Framework</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary)">Python (TBD)</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:1.5rem 3rem;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">Week 05 / FYP Weekly Log</span>
+  <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted)">Automated Mushroom Cultivation System</span>
+</footer>
+
+</body>
+</html>
