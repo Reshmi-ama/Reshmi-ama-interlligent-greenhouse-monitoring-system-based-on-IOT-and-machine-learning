@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4 — Wavelength Research & LED Configuration</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1a0f;
+    --surface: #132015;
+    --surface2: #1a2e1d;
+    --surface3: #0f1c12;
+    --border: rgba(99,153,34,0.18);
+    --border-strong: rgba(99,153,34,0.35);
+    --text-primary: #e8f5d8;
+    --text-secondary: #8ab868;
+    --text-muted: #5a7a42;
+    --accent: #7ec832;
+    --accent2: #1D9E75;
+    --blue: #60a8f0;
+    --blue-bg: rgba(55,138,221,0.1);
+    --blue-border: rgba(55,138,221,0.3);
+    --green-c: #6ecc5a;
+    --green-bg: rgba(99,153,34,0.1);
+    --green-border: rgba(99,153,34,0.3);
+    --white-c: #d8e8f5;
+    --white-bg: rgba(180,210,240,0.08);
+    --white-border: rgba(180,210,240,0.25);
+    --red-c: #f07070;
+    --red-bg: rgba(200,60,60,0.1);
+    --red-border: rgba(200,60,60,0.3);
+    --amber: #FAC775;
+    --amber-bg: rgba(186,117,23,0.1);
+    --amber-border: rgba(186,117,23,0.3);
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .header-nav { display: flex; gap: 2rem; list-style: none; }
+  .header-nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; letter-spacing: 0.04em; transition: color 0.2s; }
+  .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+  .week-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(126,200,50,0.12); border: 1px solid rgba(126,200,50,0.3); color: var(--accent); padding: 4px 10px; border-radius: 4px; }
+
+  /* Hero */
+  .hero {
+    padding: 5rem 3rem 3rem; max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: end;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hero-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--text-muted); }
+  .hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.75rem; }
+  .hero-title span { color: var(--accent); }
+  .hero-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 560px; }
+  .hero-meta { text-align: right; }
+  .hero-week-num { font-family: 'Syne', sans-serif; font-size: 7rem; font-weight: 800; color: rgba(126,200,50,0.06); line-height: 1; letter-spacing: -0.05em; user-select: none; }
+  .hero-date { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: -1rem; }
+
+  /* Layout */
+  .main { max-width: 1100px; margin: 0 auto; padding: 3rem 3rem 5rem; display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start; }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+  .body-text { font-size: 14.5px; color: var(--text-secondary); line-height: 1.75; }
+  .body-text p + p { margin-top: 0.75rem; }
+
+  /* Wavelength cards */
+  .wavelength-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+  .wl-card {
+    border-radius: 12px; padding: 1.2rem 1.3rem;
+    border: 1px solid; position: relative; overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .wl-card:hover { transform: translateY(-2px); }
+  .wl-card.blue { background: var(--blue-bg); border-color: var(--blue-border); }
+  .wl-card.green-c { background: var(--green-bg); border-color: var(--green-border); }
+  .wl-card.white-c { background: var(--white-bg); border-color: var(--white-border); }
+  .wl-card.red-c { background: var(--red-bg); border-color: var(--red-border); }
+
+  .wl-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .wl-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .wl-dot.blue { background: var(--blue); box-shadow: 0 0 8px rgba(96,168,240,0.5); }
+  .wl-dot.green-c { background: var(--green-c); box-shadow: 0 0 8px rgba(110,204,90,0.5); }
+  .wl-dot.white-c { background: #d8e8f5; box-shadow: 0 0 8px rgba(216,232,245,0.4); }
+  .wl-dot.red-c { background: var(--red-c); box-shadow: 0 0 8px rgba(240,112,112,0.5); }
+
+  .wl-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+  .wl-name.blue { color: var(--blue); }
+  .wl-name.green-c { color: var(--green-c); }
+  .wl-name.white-c { color: var(--white-c); }
+  .wl-name.red-c { color: var(--red-c); }
+
+  .wl-nm { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); margin-left: auto; }
+  .wl-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .wl-verdict {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    padding: 3px 9px; border-radius: 4px; font-weight: 500;
+  }
+  .wl-verdict.best { background: rgba(126,200,50,0.15); color: var(--accent); border: 1px solid rgba(126,200,50,0.3); }
+  .wl-verdict.good { background: rgba(29,158,117,0.15); color: var(--accent2); border: 1px solid rgba(29,158,117,0.3); }
+  .wl-verdict.ok { background: rgba(180,210,240,0.1); color: var(--white-c); border: 1px solid rgba(180,210,240,0.2); }
+  .wl-verdict.avoid { background: var(--red-bg); color: var(--red-c); border: 1px solid var(--red-border); }
+
+  /* Photoperiod table */
+  .period-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 1rem; }
+  .period-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.2rem;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .period-card.featured { border-color: var(--accent); background: rgba(126,200,50,0.05); }
+  .period-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 3px; display: inline-block; width: fit-content; }
+  .period-tag.yield { background: rgba(126,200,50,0.12); color: var(--accent); }
+  .period-tag.size { background: rgba(96,168,240,0.12); color: var(--blue); }
+  .period-tag.baseline { background: rgba(255,255,255,0.05); color: var(--text-muted); }
+
+  .period-cycle {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem;
+    color: var(--text-primary); letter-spacing: -0.02em; line-height: 1;
+  }
+  .period-cycle span { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; }
+  .period-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .period-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* Visual cycle bar */
+  .cycle-visual { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .cycle-on { background: var(--accent); }
+  .cycle-off { background: rgba(255,255,255,0.06); }
+
+  /* Testing setup */
+  .setup-block {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; margin-top: 1rem;
+  }
+  .setup-title { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1.25rem; }
+
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .setup-group { }
+  .setup-group-title { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-bottom: 8px; }
+  .setup-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; }
+  .setup-bullet { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-top: 6px; flex-shrink: 0; }
+  .setup-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .setup-text strong { color: var(--text-primary); font-weight: 500; }
+
+  .circuit-note {
+    margin-top: 1.25rem; padding: 1rem 1.2rem;
+    background: var(--surface2); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+  }
+  .circuit-note strong { color: var(--accent); font-weight: 500; }
+
+  /* Stage note */
+  .stage-note {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--amber-bg); border: 1px solid var(--amber-border);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-top: 1rem;
+  }
+  .stage-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .stage-text { font-size: 13px; color: #d4943a; line-height: 1.6; }
+  .stage-text strong { color: var(--amber); font-weight: 500; }
+
+  /* References */
+  .ref-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .ref-item { border-left: 2px solid var(--border-strong); padding-left: 12px; }
+  .ref-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+  .ref-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .ref-journal { font-style: italic; color: var(--text-muted); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .sidebar-card-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  .progress-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-item:last-child { margin-bottom: 0; }
+  .progress-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); }
+  .progress-check.done { background: rgba(126,200,50,0.12); border-color: var(--accent); }
+  .progress-check.inprogress { border-color: #d4943a; color: #d4943a; background: rgba(186,117,23,0.1); }
+  .progress-label { font-size: 13px; color: var(--text-secondary); }
+
+  .week-nav { display: flex; flex-direction: column; gap: 6px; }
+  .week-nav-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .week-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .week-dot.current { background: var(--accent); }
+  .week-dot.done { background: var(--text-muted); }
+  .week-nav-label { font-size: 12.5px; color: var(--text-muted); }
+  .week-nav-item.current .week-nav-label { color: var(--text-primary); font-weight: 500; }
+
+  /* Wavelength quick-ref in sidebar */
+  .wl-quick { display: flex; flex-direction: column; gap: 8px; }
+  .wl-row { display: flex; align-items: center; gap: 10px; }
+  .wl-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .wl-row-label { font-size: 12.5px; color: var(--text-secondary); flex: 1; }
+  .wl-row-verdict { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); }
+
+  @media (max-width: 768px) {
+    .header { padding: 0 1.25rem; }
+    .hero { grid-template-columns: 1fr; padding: 2.5rem 1.25rem 2rem; }
+    .hero-meta { display: none; }
+    .main { grid-template-columns: 1fr; padding: 2rem 1.25rem 3rem; }
+    .wavelength-grid, .period-grid, .setup-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">FYP Portfolio</div>
+  <nav><ul class="header-nav">
+    <li><a href="#">Overview</a></li>
+    <li><a href="#" class="active">Weekly Log</a></li>
+    <li><a href="#">System Design</a></li>
+    <li><a href="#">References</a></li>
+  </ul></nav>
+  <span class="week-badge">Week 04</span>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="hero-label">Weekly Progress Log</p>
+    <h1 class="hero-title">Wavelength Research<br>&amp; <span>LED Configuration</span></h1>
+    <p class="hero-subtitle">Investigating optimal LED wavelengths for oyster mushroom cultivation, determining on/off photoperiod cycles, and designing a multi-wavelength test setup for empirical validation.</p>
+  </div>
+  <div class="hero-meta">
+    <div class="hero-week-num">04</div>
+    <p class="hero-date">May 2026</p>
+  </div>
+</section>
+
+<div class="main">
+  <div>
+
+    <!-- Intro -->
+    <div class="section">
+      <p class="section-label">// Overview</p>
+      <h2 class="section-title">Research Focus This Week</h2>
+      <div class="body-text">
+        <p>This week we shifted focus from communication hardware to the agricultural side of the system — specifically, what wavelengths of light actually benefit oyster mushroom cultivation and at what duty cycles. Since our VLC downlink uses visible LEDs as the data carrier, the LED choice has a dual role: communication signal and biological stimulation. Getting the wavelength right means we can serve both purposes simultaneously.</p>
+        <p>We reviewed published studies on the effects of LED colour on white oyster mushroom yield and physical characteristics, and used these findings to determine the photoperiod settings we will test in our system. We also designed a multi-wavelength testing setup to experimentally validate the configurations before integrating them into the final build.</p>
+      </div>
+    </div>
+
+    <!-- Wavelengths -->
+    <div class="section">
+      <p class="section-label">// Wavelength Research</p>
+      <h2 class="section-title">Optimal Wavelengths for Growth</h2>
+      <div class="body-text">
+        <p>Based on literature, four wavelength ranges were evaluated for their effect on total fresh weight, cap diameter, stem thickness, and time-to-pinhead emergence.</p>
+      </div>
+
+      <div class="wavelength-grid">
+
+        <div class="wl-card blue">
+          <div class="wl-header">
+            <div class="wl-dot blue"></div>
+            <span class="wl-name blue">Blue LED</span>
+            <span class="wl-nm">~475 nm</span>
+          </div>
+          <p class="wl-desc">Most effective wavelength overall. Yields the highest total fresh weight, largest mushroom caps (pileus diameter), and thickest stems. Strongly recommended as the primary light source.</p>
+          <span class="wl-verdict best">★ Best for yield &amp; size</span>
+        </div>
+
+        <div class="wl-card green-c">
+          <div class="wl-header">
+            <div class="wl-dot green-c"></div>
+            <span class="wl-name green-c">Green LED</span>
+            <span class="wl-nm">515–530 nm</span>
+          </div>
+          <p class="wl-desc">Highly effective for accelerating the reproductive stage — significantly shortens the time for pinheads to emerge and fruiting bodies to form. Good candidate for early fruiting stimulation.</p>
+          <span class="wl-verdict good">✓ Best for fast pinning</span>
+        </div>
+
+        <div class="wl-card white-c">
+          <div class="wl-header">
+            <div class="wl-dot white-c"></div>
+            <span class="wl-name white-c">White LED</span>
+            <span class="wl-nm">Broad spectrum</span>
+          </div>
+          <p class="wl-desc">Broad spectrum that accelerates pinhead emergence and supports strong overall yields. Practical choice as it doubles as room illumination and is widely available. Selected for VLC integration.</p>
+          <span class="wl-verdict ok">◎ Practical &amp; versatile</span>
+        </div>
+
+        <div class="wl-card red-c">
+          <div class="wl-header">
+            <div class="wl-dot red-c"></div>
+            <span class="wl-name red-c">Red LED</span>
+            <span class="wl-nm">~660 nm</span>
+          </div>
+          <p class="wl-desc">Should be avoided during the fruiting phase — suppresses growth, reduces total yield, and causes elongated lower-quality stems. May temporarily promote early mycelium growth but not recommended for general use.</p>
+          <span class="wl-verdict avoid">✕ Avoid — reduces yield</span>
+        </div>
+
+      </div>
+
+      <div class="stage-note">
+        <span class="stage-icon">⚠</span>
+        <p class="stage-text"><strong>Stage-specific requirement:</strong> LED light should only be applied during the <strong>reproductive stage</strong> (when fruiting bodies are forming). Applying light during the vegetative/mycelium colonisation phase is not recommended and may cause adverse effects.</p>
+      </div>
+    </div>
+
+    <!-- Photoperiods -->
+    <div class="section">
+      <p class="section-label">// On/Off Cycles</p>
+      <h2 class="section-title">Recommended Photoperiods</h2>
+      <div class="body-text">
+        <p>Three photoperiod configurations were identified from the literature. Each is optimised for a different cultivation goal and will be tested independently in the experimental setup.</p>
+      </div>
+
+      <div class="period-grid">
+
+        <div class="period-card featured">
+          <span class="period-tag yield">Max Yield</span>
+          <div class="period-cycle">3h <span>ON</span> / 21h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:12.5%"></div>
+            <div class="cycle-off" style="width:87.5%"></div>
+          </div>
+          <p class="period-label">Highest fruiting body count</p>
+          <p class="period-desc">Produces the highest total fresh weight and greatest number of individual fruiting bodies per flush. Best for quantity-focused cultivation.</p>
+        </div>
+
+        <div class="period-card">
+          <span class="period-tag size">Max Size</span>
+          <div class="period-cycle">15h <span>ON</span> / 9h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:62.5%"></div>
+            <div class="cycle-off" style="width:37.5%"></div>
+          </div>
+          <p class="period-label">Largest cap &amp; stem diameter</p>
+          <p class="period-desc">Produces commercial-grade mushrooms with the largest cap diameters and thickest stems. Best for size and appearance quality.</p>
+        </div>
+
+        <div class="period-card">
+          <span class="period-tag baseline">Baseline</span>
+          <div class="period-cycle">12h <span>ON</span> / 12h <span>OFF</span></div>
+          <div class="cycle-visual">
+            <div class="cycle-on" style="width:50%"></div>
+            <div class="cycle-off" style="width:50%"></div>
+          </div>
+          <p class="period-label">Standard control cycle</p>
+          <p class="period-desc">Standard 12/12 cycle providing stable, consistent results. Used as the control baseline for comparing the other two configurations during testing.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Testing Setup -->
+    <div class="section">
+      <p class="section-label">// Experimental Design</p>
+      <h2 class="section-title">Multi-Wavelength Testing Setup</h2>
+      <div class="body-text">
+        <p>To empirically validate the wavelength and photoperiod findings before integrating them into the full automated system, we designed the following comparative test setup. Three isolated mushroom cultivation boxes will run simultaneously under different LED configurations, monitored by the Arduino-based control system.</p>
+      </div>
+
+      <div class="setup-block">
+        <p class="setup-title">// Test Configuration</p>
+        <div class="setup-grid">
+
+          <div class="setup-group">
+            <p class="setup-group-title">Test Units</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit A:</strong> Blue LED (~475 nm) — 3h ON / 21h OFF</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit B:</strong> White LED — 15h ON / 9h OFF</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text"><strong>Unit C (Control):</strong> White LED — 12h ON / 12h OFF</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Measurement Metrics</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Total fresh weight per flush (grams)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Cap (pileus) diameter (mm)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Stem (stipe) thickness (mm)</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Days to pinhead emergence</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Control Variables</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Temperature: 24–28°C</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Humidity: 80–90% RH</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Substrate: identical substrate blocks</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Strain: white oyster (<em>Pleurotus ostreatus</em>)</p></div>
+          </div>
+
+          <div class="setup-group">
+            <p class="setup-group-title">Hardware Used</p>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Arduino Uno — timer &amp; LED control</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">Blue, white high-brightness LEDs</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">DHT22 — temperature &amp; humidity sensor</p></div>
+            <div class="setup-item"><div class="setup-bullet"></div><p class="setup-text">NPN transistor driver circuits (per week 3)</p></div>
+          </div>
+
+        </div>
+
+        <div class="circuit-note">
+          <strong>Circuit note:</strong> The LED driver circuit designed in Week 3 (Arduino → NPN transistor → LED) will be used for all test units. The Arduino's digital output timer controls the on/off cycling. A circuit diagram has been prepared and will be included as a supplementary document.
+        </div>
+      </div>
+    </div>
+
+    <!-- References -->
+    <div class="section">
+      <p class="section-label">// References</p>
+      <h2 class="section-title">Research References</h2>
+      <ul class="ref-list">
+        <li class="ref-item">
+          <p class="ref-num">[1]</p>
+          <p class="ref-text">S. N. F. Abdullah, H. Yusoff, K. M. Hyie, S. Budin, and S. M. F. S. A. Nasir, "Effects of various LED light colours on yield and physical characteristics of white oyster mushrooms," <span class="ref-journal">ESTEEM Academic Journal</span>, vol. 19, pp. 23–36, Sep. 2023.</p>
+        </li>
+        <li class="ref-item">
+          <p class="ref-num">[2]</p>
+          <p class="ref-text">S. N. F. Abdullah, H. Yusoff, and S. M. F. S. A. Nasir, "Enhancing white oyster mushroom cultivation through light stimulation using white LED," <span class="ref-journal">Jurnal Mekanikal</span>, vol. 46, pp. 122–132, Dec. 2023.</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Week 4 Checklist</p>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Wavelength literature review</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Blue LED identified as primary</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Photoperiod cycles determined</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Stage-specific rule noted</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Test setup designed (3 units)</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Circuit diagram prepared</span></div>
+      <div class="progress-item"><div class="progress-check inprogress">→</div><span class="progress-label">Hardware procurement</span></div>
+      <div class="progress-item"><div class="progress-check"></div><span class="progress-label">Test unit assembly</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Wavelength Quick Ref</p>
+      <div class="wl-quick">
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--blue);"></div>
+          <span class="wl-row-label">Blue ~475 nm</span>
+          <span class="wl-row-verdict" style="color:var(--accent);">★ Best yield</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--green-c);"></div>
+          <span class="wl-row-label">Green 515–530 nm</span>
+          <span class="wl-row-verdict" style="color:var(--accent2);">Fast pin</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--white-c);"></div>
+          <span class="wl-row-label">White broad</span>
+          <span class="wl-row-verdict">Versatile</span>
+        </div>
+        <div class="wl-row">
+          <div class="wl-swatch" style="background:var(--red-c);"></div>
+          <span class="wl-row-label">Red ~660 nm</span>
+          <span class="wl-row-verdict" style="color:var(--red-c);">✕ Avoid</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Project Timeline</p>
+      <div class="week-nav">
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 1 — Scoping &amp; planning</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 2 — Farm visit</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 3 — VLC downlink design</span></div>
+        <div class="week-nav-item current"><span class="week-dot current"></span><span class="week-nav-label">Week 4 — Wavelength research</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 5 — Hardware procurement</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 6 — Circuit prototyping</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>System Context</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Project</span>
+          <span style="font-size:12px;color:var(--text-primary);font-weight:500">Auto Mushroom Cultivation</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Primary LED</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue)">Blue ~475 nm</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Max yield cycle</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent)">3h / 21h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Max size cycle</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue)">15h / 9h</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+          <span style="font-size:12px;color:var(--text-muted)">Test units</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary)">3 parallel setups</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:1.5rem 3rem;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">Week 04 / FYP Weekly Log</span>
+  <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted)">Automated Mushroom Cultivation System</span>
+</footer>
+
+</body>
+</html>
