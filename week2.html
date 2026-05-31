@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Week 2 — Farm Visit | IGMS FYP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d7a4f;
+            --secondary: #8bc34a;
+            --accent: #00bcd4;
+            --dark: #0f1f14;
+            --light: #f0f7f2;
+            --text-muted: #6c8f76;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #222; background: #f8f9fa; }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; }
+
+        /* TOP BAR */
+        .top-bar {
+            background: var(--dark);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .top-bar a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+        .top-bar a:hover { color: var(--secondary); }
+        .top-bar .brand { color: var(--secondary); font-weight: 700; font-size: 0.95rem; }
+
+        /* HERO */
+        .week-hero {
+            background: linear-gradient(135deg, #1a3d27 0%, #2d5a1b 100%);
+            padding: 60px 0 50px;
+            color: #fff;
+        }
+        .phase-label {
+            display: inline-block;
+            background: rgba(139,195,74,0.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .week-hero h1 { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 14px; line-height: 1.2; }
+        .week-hero p { color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 650px; margin-bottom: 24px; }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139,195,74,0.15);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .meta-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .meta-chip {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.8);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .meta-chip i { color: var(--secondary); }
+
+        /* CONTENT */
+        .content-wrap { padding: 50px 0 80px; }
+        .main-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--light);
+            margin-left: 10px;
+        }
+
+        /* BULLET LIST */
+        .work-list { list-style: none; padding: 0; margin: 0; }
+        .work-list li {
+            padding: 13px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 14px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .work-list li:last-child { border-bottom: none; }
+        .work-list li::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 8px;
+        }
+
+        /* HIGHLIGHT CARD */
+        .highlight-card {
+            background: var(--light);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 16px 20px;
+            margin-bottom: 14px;
+        }
+        .highlight-card h6 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        .highlight-card p { font-size: 0.83rem; color: #444; margin: 0; line-height: 1.6; }
+
+        /* ENV CONDITIONS TABLE */
+        .env-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+        .env-table th {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 14px;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+        .env-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+        .env-table tr:hover td { background: var(--light); }
+        .tag-pill {
+            display: inline-block;
+            background: rgba(45,122,79,0.1);
+            color: var(--primary);
+            padding: 2px 9px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        /* SPECIAL OUTCOME BOX */
+        .outcome-box {
+            background: linear-gradient(135deg, var(--primary), #1a5235);
+            border-radius: 12px;
+            padding: 28px 32px;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+        .outcome-box h5 { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--secondary); margin-bottom: 10px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; }
+        .outcome-box p { margin: 0; font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.9); }
+        .outcome-box .outcome-icon { font-size: 2.5rem; margin-bottom: 14px; }
+
+        /* DOCUMENT NOTICE */
+        .doc-notice {
+            background: #fff8e1;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .doc-notice i { color: #ffc107; font-size: 1.5rem; flex-shrink: 0; margin-top: 2px; }
+        .doc-notice h6 { font-family: 'Inter', sans-serif; font-weight: 700; margin-bottom: 4px; font-size: 0.9rem; color: #856404; }
+        .doc-notice p { font-size: 0.82rem; color: #856404; margin: 0; }
+
+        /* SIDEBAR */
+        .sidebar-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+        }
+        .sidebar-title {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--dark);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.82rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:first-child { color: var(--text-muted); }
+        .info-row span:last-child { font-weight: 600; color: var(--dark); }
+
+        /* WEEK NAV */
+        .week-nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        .week-btn {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .week-btn.done { background: var(--primary); color: #fff; }
+        .week-btn.upcoming { background: #f0f0f0; color: #aaa; }
+        .week-btn.active-week { border-color: var(--dark) !important; box-shadow: 0 0 0 2px var(--secondary); }
+
+        /* NAV FOOTER */
+        .nav-footer {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-btn.prev { background: var(--light); color: var(--primary); }
+        .nav-btn.prev:hover { background: #dceee4; color: var(--primary); }
+        .nav-btn.next { background: var(--primary); color: #fff; }
+        .nav-btn.next:hover { background: #1a5235; color: #fff; }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="index.html" class="brand">🌿 IGMS · IoT &amp; ML</a>
+        <div class="d-flex gap-3">
+            <a href="index.html#timeline"><i class="fas fa-list me-1"></i>All Weeks</a>
+            <a href="index.html#team"><i class="fas fa-users me-1"></i>Team</a>
+            <a href="index.html#contact"><i class="fas fa-envelope me-1"></i>Contact</a>
+        </div>
+    </div>
+</div>
+
+<!-- HERO -->
+<div class="week-hero">
+    <div class="container">
+        <span class="phase-label">Phase 1 · Field Work</span>
+        <h1>Week 2: Farm Visit</h1>
+        <p>Site visit to <strong>Uhumeeya Global Green Agro Pvt Ltd</strong> — gathering firsthand knowledge on mushroom cultivation procedures, environmental requirements, and real challenges faced by Sri Lankan farmers.</p>
+        <div class="status-badge"><i class="fas fa-check-circle"></i> Completed</div>
+        <div class="meta-chips">
+            <span class="meta-chip"><i class="fas fa-calendar"></i> Feb – Mar 2026</span>
+            <span class="meta-chip"><i class="fas fa-clock"></i> Week 2 of 14</span>
+            <span class="meta-chip"><i class="fas fa-map-marker-alt"></i> Uhumeeya Global Green Agro Pvt Ltd</span>
+            <span class="meta-chip"><i class="fas fa-university"></i> EEE · University of Peradeniya</span>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content-wrap">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- LEFT: Main Content -->
+            <div class="col-lg-8">
+
+                <!-- KEY OUTCOME - Farm testing agreement -->
+                <div class="outcome-box">
+                    <div class="outcome-icon">🤝</div>
+                    <h5>Major Outcome — Testing Agreement Secured</h5>
+                    <p>The owner of Uhumeeya Global Green Agro Pvt Ltd has agreed to provide their farmhouse as the <strong>testing site</strong> for our final system. This gives us a real-world mushroom cultivation environment to validate the complete IoT + VLC + LoRa system under actual farming conditions.</p>
+                </div>
+
+                <!-- What We Did -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-tasks"></i> What We Did This Week</p>
+                    <ul class="work-list">
+                        <li>Visited <strong>Uhumeeya Global Green Agro Pvt Ltd</strong> mushroom farm and met with the farm owner and cultivators to discuss the full mushroom growing process from substrate preparation to harvest.</li>
+                        <li>Conducted structured discussions with farmers about the <strong>step-by-step procedure</strong> of growing Oyster and Button mushrooms — including substrate selection, pasteurisation, inoculation, spawn run, and fruiting stages.</li>
+                        <li>Collected detailed information on <strong>environmental conditions</strong> required for Oyster and Button mushroom cultivation — temperature ranges, humidity levels, CO₂ tolerance, light requirements, and ventilation needs.</li>
+                        <li>Discussed the <strong>major difficulties</strong> farmers face: maintaining consistent humidity manually, detecting diseases early, managing CO₂ levels in closed sheds, and the high daily labour time spent on environmental monitoring.</li>
+                        <li>Entered and inspected the <strong>closed mushroom growing houses</strong> — observed the layout, shelf arrangement, misting systems, ventilation setup, and existing (manual) monitoring methods.</li>
+                        <li>Collected <strong>photographs</strong> of the growing houses, mushroom bags at different growth stages, substrate preparation area, and existing equipment — for use in system design and documentation.</li>
+                        <li>Identified that farmers spend <strong>3–4 hours daily</strong> on manual water spraying and environmental checks — confirming the core problem our automated system will solve.</li>
+                        <li>Secured agreement from the farm owner to use the farmhouse as a <strong>live testing environment</strong> for our final integrated system in Week 13–14.</li>
+                    </ul>
+                </div>
+
+                <!-- Environmental Conditions Collected -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-thermometer-half"></i> Environmental Conditions Collected from Farm</p>
+                    <table class="env-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Oyster Mushroom</th>
+                                <th>Button Mushroom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Temperature</strong></td>
+                                <td>20–30°C (fruiting)<br>25–28°C (spawn run)</td>
+                                <td>18–25°C (fruiting)<br>22–25°C (spawn run)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Humidity</strong></td>
+                                <td>80–95% (fruiting)<br>Substrate moisture: 65–70%</td>
+                                <td>85–95% (fruiting)<br>Substrate moisture: 60–65%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CO₂ Level</strong></td>
+                                <td>&lt;1000 ppm (fruiting)<br>Good ventilation essential</td>
+                                <td>&lt;800 ppm (fruiting)<br>More sensitive to CO₂</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Light</strong></td>
+                                <td>Indirect / diffused light<br>12 hrs on / 12 hrs off</td>
+                                <td>Minimal light needed<br>Dark during spawn run</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Substrate</strong></td>
+                                <td>Paddy straw, sawdust,<br>coffee waste</td>
+                                <td>Composted manure,<br>special compost mix</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Harvest Time</strong></td>
+                                <td>4–6 weeks from spawning</td>
+                                <td>6–8 weeks from spawning</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Key Difficulties Identified -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-exclamation-triangle"></i> Key Difficulties Identified from Farmers</p>
+
+                    <div class="highlight-card">
+                        <h6>🕐 High Manual Labour Time</h6>
+                        <p>Farmers spend 3–4 hours every day manually spraying water to maintain humidity and checking each shed by hand. This is time-consuming and inconsistent — especially at night when no one monitors the sheds.</p>
+                    </div>
+
+                    <div class="highlight-card">
+                        <h6>🌡️ Inconsistent Environmental Control</h6>
+                        <p>Temperature and humidity fluctuate significantly during Sri Lankan weather changes (monsoon vs. dry season). Manual adjustments are too slow to respond to sudden changes, leading to crop failure or reduced yield.</p>
+                    </div>
+
+                    <div class="highlight-card">
+                        <h6>🦠 Late Disease Detection</h6>
+                        <p>Diseases like Trichoderma (green mold) and Bacterial Blotch are usually spotted only after significant spread — by which time an entire batch may be lost. There is no early warning system currently in use.</p>
+                    </div>
+
+                    <div class="highlight-card">
+                        <h6>💨 CO₂ Buildup in Closed Sheds</h6>
+                        <p>In fully enclosed mushroom houses, CO₂ accumulates quickly from mushroom respiration. Without automated ventilation, farmers must manually open vents — often incorrectly timed, causing deformed mushrooms with long thin stems.</p>
+                    </div>
+
+                    <div class="highlight-card">
+                        <h6>📶 No Remote Monitoring</h6>
+                        <p>All monitoring is done physically on-site. Farmers cannot check their shed conditions remotely, meaning they must be present at all times or risk undetected problems overnight or during weekends.</p>
+                    </div>
+                </div>
+
+                <!-- Document Notice -->
+                <div class="doc-notice mb-4">
+                    <i class="fas fa-file-word"></i>
+                    <div>
+                        <h6>Farm Interview Document — Coming Soon</h6>
+                        <p>A structured Q&amp;A document containing the full interview questions and answers from our discussion with the farm owner and cultivators is currently being prepared. It will be uploaded here once finalised. This document will include detailed responses on cultivation procedures, environmental management practices, and existing challenges.</p>
+                    </div>
+                </div>
+
+                <!-- Nav Footer -->
+                <div class="nav-footer">
+                    <a href="week1.html" class="nav-btn prev"><i class="fas fa-arrow-left"></i> Week 1: Literature Review</a>
+                    <span style="font-size:0.82rem; color:#aaa;">Week 2 of 14</span>
+                    <a href="index.html#timeline" class="nav-btn next">Back to Timeline <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Sidebar -->
+            <div class="col-lg-4">
+
+                <!-- Week Info -->
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Week Info</p>
+                    <div class="info-row"><span>Phase</span><span>Field Work</span></div>
+                    <div class="info-row"><span>Duration</span><span>Week 2 of 14</span></div>
+                    <div class="info-row"><span>Period</span><span>Feb – Mar 2026</span></div>
+                    <div class="info-row"><span>Status</span><span style="color:var(--primary);">✓ Completed</span></div>
+                    <div class="info-row"><span>Location</span><span>Uhumeeya Global Green Agro</span></div>
+                    <div class="info-row"><span>Testing Site</span><span style="color:var(--primary);">✓ Agreed</span></div>
+                    <div class="info-row"><span>Photos Collected</span><span style="color:var(--primary);">✓ Yes</span></div>
+                    <div class="info-row"><span>Interview Doc</span><span style="color:#ffc107;">⏳ Preparing</span></div>
+                </div>
+
+                <!-- Week Navigator -->
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Jump to Week</p>
+                    <div class="week-nav">
+                        <a href="week1.html" class="week-btn done" title="Week 1 - Literature Review">1</a>
+                        <a href="week2.html" class="week-btn done active-week" title="Week 2 - Farm Visit">2</a>
+                        <span class="week-btn upcoming" title="Week 3">3</span>
+                        <span class="week-btn upcoming" title="Week 4">4</span>
+                        <span class="week-btn upcoming" title="Week 5">5</span>
+                        <span class="week-btn upcoming" title="Week 6">6</span>
+                        <span class="week-btn upcoming" title="Week 7">7</span>
+                        <span class="week-btn upcoming" title="Week 8">8</span>
+                        <span class="week-btn upcoming" title="Week 9">9</span>
+                        <span class="week-btn upcoming" title="Week 10">10</span>
+                        <span class="week-btn upcoming" title="Week 11">11</span>
+                        <span class="week-btn upcoming" title="Week 12">12</span>
+                        <span class="week-btn upcoming" title="Week 13">13</span>
+                        <span class="week-btn upcoming" title="Week 14">14</span>
+                    </div>
+                    <p style="font-size:0.72rem; color:#aaa; margin-top:12px; margin-bottom:0;">🟢 Completed &nbsp; ⬜ Upcoming</p>
+                </div>
+
+                <!-- Farm Details -->
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Farm Details</p>
+                    <div class="info-row"><span>Farm Name</span><span style="font-size:0.78rem;">Uhumeeya Global Green Agro Pvt Ltd</span></div>
+                    <div class="info-row"><span>Species Grown</span><span>Oyster, Button</span></div>
+                    <div class="info-row"><span>Scale</span><span>Commercial</span></div>
+                    <div class="info-row"><span>Testing Agreement</span><span style="color:var(--primary); font-weight:700;">✓ Confirmed</span></div>
+                </div>
+
+                <!-- Team -->
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Team</p>
+                    <div style="font-size:0.82rem;">
+                        <div class="info-row"><span>DELAI A.M.R.A.N.</span><span style="color:var(--primary);">E/21/081</span></div>
+                        <div class="info-row"><span>DISANAYAKE A.M.R.M.</span><span style="color:var(--primary);">E/21/103</span></div>
+                        <div class="info-row"><span>LAKSHANI M.B.N.W.</span><span style="color:var(--primary);">E/21/234</span></div>
+                        <div class="info-row"><span>Supervisor</span><span style="color:var(--primary);">Himal A. Suraweera</span></div>
+                    </div>
+                </div>
+
+                <!-- Project box -->
+                <div class="sidebar-card" style="background: var(--dark); color:#fff;">
+                    <p class="sidebar-title" style="color:var(--secondary);">Project</p>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.7); margin-bottom:10px;">Intelligent Greenhouse Monitoring System Based on IoT and Machine Learning</p>
+                    <p style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin:0;">EEE · University of Peradeniya · 2025–2026</p>
+                    <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">VLC</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">LoRa</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">CNN</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">IoT</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
