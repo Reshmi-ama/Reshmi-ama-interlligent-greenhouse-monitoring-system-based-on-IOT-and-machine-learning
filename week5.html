@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 5 — ML & VLC Integration in Agriculture</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1a0f;
+    --surface: #132015;
+    --surface2: #1a2e1d;
+    --surface3: #0f1c12;
+    --border: rgba(99,153,34,0.18);
+    --border-strong: rgba(99,153,34,0.35);
+    --text-primary: #e8f5d8;
+    --text-secondary: #8ab868;
+    --text-muted: #5a7a42;
+    --accent: #7ec832;
+    --accent2: #1D9E75;
+    --blue: #60a8f0;
+    --blue-bg: rgba(55,138,221,0.1);
+    --blue-border: rgba(55,138,221,0.3);
+    --purple: #b07ef0;
+    --purple-bg: rgba(140,80,220,0.1);
+    --purple-border: rgba(140,80,220,0.3);
+    --cyan: #4dd9c0;
+    --cyan-bg: rgba(29,158,117,0.1);
+    --cyan-border: rgba(29,158,117,0.3);
+    --amber: #FAC775;
+    --amber-bg: rgba(186,117,23,0.1);
+    --amber-border: rgba(186,117,23,0.3);
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .header-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .header-nav { display: flex; gap: 2rem; list-style: none; }
+  .header-nav a { font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; letter-spacing: 0.04em; transition: color 0.2s; }
+  .header-nav a:hover, .header-nav a.active { color: var(--accent); }
+  .week-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: rgba(126,200,50,0.12); border: 1px solid rgba(126,200,50,0.3); color: var(--accent); padding: 4px 10px; border-radius: 4px; }
+
+  /* Hero */
+  .hero {
+    padding: 5rem 3rem 3rem; max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: end;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .hero-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--text-muted); }
+  .hero-title { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.75rem; }
+  .hero-title span { color: var(--accent); }
+  .hero-subtitle { font-size: 15px; color: var(--text-secondary); line-height: 1.6; max-width: 560px; }
+  .hero-meta { text-align: right; }
+  .hero-week-num { font-family: 'Syne', sans-serif; font-size: 7rem; font-weight: 800; color: rgba(126,200,50,0.06); line-height: 1; letter-spacing: -0.05em; user-select: none; }
+  .hero-date { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); margin-top: -1rem; }
+
+  /* Layout */
+  .main { max-width: 1100px; margin: 0 auto; padding: 3rem 3rem 5rem; display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start; }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; }
+  .body-text { font-size: 14.5px; color: var(--text-secondary); line-height: 1.75; }
+  .body-text p + p { margin-top: 0.75rem; }
+
+  /* ML Technique Cards */
+  .ml-card {
+    border-radius: 12px; padding: 1.5rem 1.6rem;
+    border: 1px solid; margin-bottom: 1rem;
+    transition: transform 0.2s;
+  }
+  .ml-card:hover { transform: translateY(-2px); }
+  .ml-card.regression { background: var(--blue-bg); border-color: var(--blue-border); }
+  .ml-card.dnn       { background: var(--purple-bg); border-color: var(--purple-border); }
+  .ml-card.cnn       { background: var(--cyan-bg); border-color: var(--cyan-border); }
+
+  .ml-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .ml-number {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+    width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ml-number.regression { background: rgba(96,168,240,0.2); color: var(--blue); border: 1px solid var(--blue-border); }
+  .ml-number.dnn       { background: rgba(176,126,240,0.2); color: var(--purple); border: 1px solid var(--purple-border); }
+  .ml-number.cnn       { background: rgba(77,217,192,0.2); color: var(--cyan); border: 1px solid var(--cyan-border); }
+
+  .ml-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; }
+  .ml-title.regression { color: var(--blue); }
+  .ml-title.dnn        { color: var(--purple); }
+  .ml-title.cnn        { color: var(--cyan); }
+
+  .ml-tag {
+    margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    padding: 3px 9px; border-radius: 4px;
+  }
+  .ml-tag.regression { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .ml-tag.dnn        { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+  .ml-tag.cnn        { background: var(--cyan-bg); color: var(--cyan); border: 1px solid var(--cyan-border); }
+
+  .ml-problem-solution { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .ps-block { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 0.9rem 1rem; }
+  .ps-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .ps-label.problem  { color: #f07070; }
+  .ps-label.solution { color: var(--accent); }
+  .ps-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .ps-text strong { color: var(--text-primary); font-weight: 500; }
+
+  /* Integration summary table */
+  .integration-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 13px; }
+  .integration-table th {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted); padding: 8px 12px;
+    border-bottom: 1px solid var(--border-strong); text-align: left;
+  }
+  .integration-table td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    color: var(--text-secondary); vertical-align: top; line-height: 1.5;
+  }
+  .integration-table tr:last-child td { border-bottom: none; }
+  .integration-table tr:hover td { background: rgba(126,200,50,0.03); }
+  .tag-cell { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+
+  /* Insight block */
+  .insight-block {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: rgba(126,200,50,0.05); border: 1px solid var(--border-strong);
+    border-radius: 10px; padding: 1rem 1.1rem; margin-top: 1rem;
+  }
+  .insight-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .insight-text { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .insight-text strong { color: var(--accent); font-weight: 500; }
+
+  /* References */
+  .ref-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .ref-item { border-left: 2px solid var(--border-strong); padding-left: 12px; }
+  .ref-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 3px; }
+  .ref-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .ref-journal { font-style: italic; color: var(--text-muted); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+  .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .sidebar-card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .sidebar-card-title .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+  .progress-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-item:last-child { margin-bottom: 0; }
+  .progress-check { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border-strong); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); }
+  .progress-check.done { background: rgba(126,200,50,0.12); border-color: var(--accent); }
+  .progress-check.inprogress { border-color: #d4943a; color: #d4943a; background: rgba(186,117,23,0.1); }
+  .progress-label { font-size: 13px; color: var(--text-secondary); }
+
+  .week-nav { display: flex; flex-direction: column; gap: 6px; }
+  .week-nav-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .week-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; }
+  .week-dot.current { background: var(--accent); }
+  .week-dot.done { background: var(--text-muted); }
+  .week-nav-label { font-size: 12.5px; color: var(--text-muted); }
+  .week-nav-item.current .week-nav-label { color: var(--text-primary); font-weight: 500; }
+
+  /* ML quick ref sidebar */
+  .ml-quick { display: flex; flex-direction: column; gap: 10px; }
+  .ml-row { display: flex; align-items: flex-start; gap: 10px; }
+  .ml-swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .ml-row-label { font-size: 12.5px; color: var(--text-secondary); flex: 1; line-height: 1.4; }
+  .ml-row-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+
+  @media (max-width: 768px) {
+    .header { padding: 0 1.25rem; }
+    .hero { grid-template-columns: 1fr; padding: 2.5rem 1.25rem 2rem; }
+    .hero-meta { display: none; }
+    .main { grid-template-columns: 1fr; padding: 2rem 1.25rem 3rem; }
+    .ml-problem-solution { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">FYP Portfolio</div>
+  <nav><ul class="header-nav">
+    <li><a href="#">Overview</a></li>
+    <li><a href="#" class="active">Weekly Log</a></li>
+    <li><a href="#">System Design</a></li>
+    <li><a href="#">References</a></li>
+  </ul></nav>
+  <span class="week-badge">Week 05</span>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="hero-label">Weekly Progress Log</p>
+    <h1 class="hero-title">ML &amp; VLC<br><span>Integration in Agriculture</span></h1>
+    <p class="hero-subtitle">Investigating how machine learning techniques — regression models, deep neural networks, and convolutional neural networks — can be combined with VLC to build a smarter, self-adapting mushroom cultivation system.</p>
+  </div>
+  <div class="hero-meta">
+    <div class="hero-week-num">05</div>
+    <p class="hero-date">June 2026</p>
+  </div>
+</section>
+
+<div class="main">
+  <div>
+
+    <!-- Intro -->
+    <div class="section">
+      <p class="section-label">// Overview</p>
+      <h2 class="section-title">Research Focus This Week</h2>
+      <div class="body-text">
+        <p>This week's research shifted focus toward the intelligence layer of the system — specifically, how machine learning can be integrated with Visible Light Communication to overcome real-world agricultural challenges. A greenhouse environment introduces problems that a static VLC system cannot handle alone: fog and humidity attenuate the light signal, multipath reflections off walls and substrate bags distort transmitted data, and fixed light timers cannot respond to the biological state of the growing mushrooms.</p>
+        <p>Three ML-based approaches were identified from literature, each targeting a distinct failure point in the VLC–agriculture pipeline. These techniques will inform the software architecture of our system in later weeks.</p>
+      </div>
+    </div>
+
+    <!-- ML Techniques -->
+    <div class="section">
+      <p class="section-label">// ML Techniques</p>
+      <h2 class="section-title">Three Integration Approaches</h2>
+
+      <!-- Card 1: Regression -->
+      <div class="ml-card regression">
+        <div class="ml-card-header">
+          <div class="ml-number regression">1</div>
+          <span class="ml-title regression">Predictive Signal Boosting</span>
+          <span class="ml-tag regression">Regression ML</span>
+        </div>
+        <div class="ml-problem-solution">
+          <div class="ps-block">
+            <p class="ps-label problem">⚠ The Problem</p>
+            <p class="ps-text">Fog and humidity in the mushroom shed block VLC light signals, causing signal drops that interrupt data transmission between the controller and sensors.</p>
+          </div>
+          <div class="ps-block">
+            <p class="ps-label solution">✓ The Solution</p>
+            <p class="ps-text">ML regression models learn how fog conditions affect light intensity. The system can then <strong>predict signal drops</strong> before they happen and automatically <strong>boost LED brightness</strong> to push through the fog before data is lost.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: DNN -->
+      <div class="ml-card dnn">
+        <div class="ml-card-header">
+          <div class="ml-number dnn">2</div>
+          <span class="ml-title dnn">Distortion Correction</span>
+          <span class="ml-tag dnn">Deep Neural Networks</span>
+        </div>
+        <div class="ml-problem-solution">
+          <div class="ps-block">
+            <p class="ps-label problem">⚠ The Problem</p>
+            <p class="ps-text">Light bouncing off walls and substrate bags (multipath reflection) distorts the digital signal at the receiver, causing bit errors and corrupted sensor readings.</p>
+          </div>
+          <div class="ps-block">
+            <p class="ps-label solution">✓ The Solution</p>
+            <p class="ps-text">A Deep Neural Network learns the room's unique reflection pattern, acting as a highly advanced equalizer to <strong>clean up distorted light waves</strong> and perfectly reconstruct the original transmitted data.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: CNN -->
+      <div class="ml-card cnn">
+        <div class="ml-card-header">
+          <div class="ml-number cnn">3</div>
+          <span class="ml-title cnn">Vision-Driven Dynamic Lighting</span>
+          <span class="ml-tag cnn">CNNs</span>
+        </div>
+        <div class="ml-problem-solution">
+          <div class="ps-block">
+            <p class="ps-label problem">⚠ The Problem</p>
+            <p class="ps-text">Static light timers aren't optimised for real-time biological needs — mushrooms at different growth stages require different light spectrums, but fixed schedules cannot respond to what's actually happening.</p>
+          </div>
+          <div class="ps-block">
+            <p class="ps-label solution">✓ The Solution</p>
+            <p class="ps-text">Computer vision (CNN) monitors plant growth in real-time. When the AI detects a mushroom is ready for the next growth stage, it uses VLC to <strong>instantly adjust the LED light spectrum</strong> (e.g., triggering blue lights at 475 nm) to save energy and maximise yields.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="insight-block">
+        <span class="insight-icon">💡</span>
+        <p class="insight-text"><strong>Key insight:</strong> Each technique targets a different layer — Regression ML handles the <strong>physical channel</strong>, Deep Neural Networks handle the <strong>signal processing layer</strong>, and CNNs handle the <strong>application layer</strong>. Together they form a complete intelligent VLC pipeline for smart agriculture.</p>
+      </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="section">
+      <p class="section-label">// Summary</p>
+      <h2 class="section-title">Integration Overview</h2>
+      <div class="body-text">
+        <p>The three techniques map directly onto challenges identified in earlier weeks — the VLC downlink designed in Week 3, the LED configuration from Week 4, and the LoRa uplink from the system architecture. The table below summarises how each approach connects to the broader system.</p>
+      </div>
+      <table class="integration-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Technique</th>
+            <th>Problem Solved</th>
+            <th>System Layer</th>
+            <th>ML Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag-cell" style="background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);">1</span></td>
+            <td style="color:var(--blue);font-weight:500;">Predictive Signal Boosting</td>
+            <td>Fog / humidity attenuation</td>
+            <td>Physical channel</td>
+            <td><span class="tag-cell" style="background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);">Regression</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-cell" style="background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);">2</span></td>
+            <td style="color:var(--purple);font-weight:500;">Distortion Correction</td>
+            <td>Multipath reflection noise</td>
+            <td>Signal processing</td>
+            <td><span class="tag-cell" style="background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);">DNN</span></td>
+          </tr>
+          <tr>
+            <td><span class="tag-cell" style="background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border);">3</span></td>
+            <td style="color:var(--cyan);font-weight:500;">Vision-Driven Dynamic Lighting</td>
+            <td>Static light scheduling</td>
+            <td>Application / control</td>
+            <td><span class="tag-cell" style="background:var(--cyan-bg);color:var(--cyan);border:1px solid var(--cyan-border);">CNN</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- References -->
+    <div class="section">
+      <p class="section-label">// References</p>
+      <h2 class="section-title">Research References</h2>
+      <ul class="ref-list">
+        <li class="ref-item">
+          <p class="ref-num">[1]</p>
+          <p class="ref-text">A. B. [Author Last Name] and C. D. [Author Last Name], "Predicting and beating the 'greenhouse fog': A machine learning approach to VLC in smart farming," <span class="ref-journal">[Abbreviated Name of Journal or Conference]</span>, vol. [X], no. [Y], pp. [xxx–xxx], [Abbrev. Month] [Year].</p>
+        </li>
+        <li class="ref-item">
+          <p class="ref-num">[2]</p>
+          <p class="ref-text">E. F. [Author Last Name], "The deep learning 'signal cleaner': Utilizing deep neural networks for VLC multipath distortion," <span class="ref-journal">[Abbreviated Name of Journal or Conference]</span>, vol. [X], no. [Y], pp. [xxx–xxx], [Abbrev. Month] [Year].</p>
+        </li>
+        <li class="ref-item">
+          <p class="ref-num">[3]</p>
+          <p class="ref-text">G. H. [Author Last Name], I. J. [Author Last Name], and K. L. [Author Last Name], "Camera-driven dynamic lighting: Combining convolutional neural networks and VLC for crop cultivation," <span class="ref-journal">[Abbreviated Name of Journal or Conference]</span>, vol. [X], no. [Y], pp. [xxx–xxx], [Abbrev. Month] [Year].</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Week 5 Checklist</p>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">ML + VLC literature review</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Regression approach identified</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">DNN distortion correction studied</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">CNN vision-driven lighting studied</span></div>
+      <div class="progress-item"><div class="progress-check done">✓</div><span class="progress-label">Integration layer mapping done</span></div>
+      <div class="progress-item"><div class="progress-check inprogress">→</div><span class="progress-label">Software architecture planning</span></div>
+      <div class="progress-item"><div class="progress-check"></div><span class="progress-label">ML model selection for build</span></div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>ML Approaches Quick Ref</p>
+      <div class="ml-quick">
+        <div class="ml-row">
+          <div class="ml-swatch" style="background:var(--blue);box-shadow:0 0 6px rgba(96,168,240,0.5);"></div>
+          <span class="ml-row-label">Regression ML — fog signal prediction</span>
+          <span class="ml-row-tag" style="color:var(--blue);">Channel</span>
+        </div>
+        <div class="ml-row">
+          <div class="ml-swatch" style="background:var(--purple);box-shadow:0 0 6px rgba(176,126,240,0.5);"></div>
+          <span class="ml-row-label">DNN — multipath distortion removal</span>
+          <span class="ml-row-tag" style="color:var(--purple);">Signal</span>
+        </div>
+        <div class="ml-row">
+          <div class="ml-swatch" style="background:var(--cyan);box-shadow:0 0 6px rgba(77,217,192,0.5);"></div>
+          <span class="ml-row-label">CNN — vision-driven LED control</span>
+          <span class="ml-row-tag" style="color:var(--cyan);">App</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>Project Timeline</p>
+      <div class="week-nav">
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 1 — Scoping &amp; planning</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 2 — Farm visit</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 3 — VLC downlink design</span></div>
+        <div class="week-nav-item"><span class="week-dot done"></span><span class="week-nav-label">Week 4 — Wavelength research</span></div>
+        <div class="week-nav-item current"><span class="week-dot current"></span><span class="week-nav-label">Week 5 — ML &amp; VLC integration</span></div>
+        <div class="week-nav-item"><span class="week-dot"></span><span class="week-nav-label">Week 6 — Circuit prototyping</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <p class="sidebar-card-title"><span class="dot"></span>System Context</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">Project</span>
+          <span style="font-size:12px;color:var(--text-primary);font-weight:500">Auto Mushroom Cultivation</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">ML layer 1</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--blue)">Regression</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">ML layer 2</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--purple)">DNN</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);">
+          <span style="font-size:12px;color:var(--text-muted)">ML layer 3</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan)">CNN</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;">
+          <span style="font-size:12px;color:var(--text-muted)">References</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-secondary)">3 papers</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<footer style="border-top:1px solid var(--border);padding:1.5rem 3rem;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted)">Week 05 / FYP Weekly Log</span>
+  <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--text-muted)">Automated Mushroom Cultivation System</span>
+</footer>
+
+</body>
+</html>
