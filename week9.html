@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Week 9 — Practical Changes After Consultation with Mr. Nadun</title>
+<style>
+  :root {
+    --bg: #12140f;
+    --panel: #1b1d16;
+    --ink: #eae6da;
+    --muted: #9a9a8c;
+    --line: #33362b;
+    --green: #4ade80;
+    --blue: #5eb3f6;
+    --white: #eae6da;
+    --dark: #6b6b60;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    padding: 48px 24px 80px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 36px;
+  }
+  .eyebrow {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 28px;
+    margin: 8px 0 4px;
+  }
+  .sub { color: var(--muted); font-size: 13px; }
+
+  section { margin-bottom: 40px; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .num { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+
+  .changes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 16px 18px;
+    background: var(--panel);
+  }
+  .card .tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .card p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .card .ref { color: var(--muted); font-size: 11px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  td.group { font-weight: 700; }
+  .pill {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-bottom: 4px;
+  }
+  .pill.dark { background: #26281f; color: var(--muted); }
+  .pill.green { background: #16321f; color: var(--green); }
+  .pill.blue { background: #14263a; color: var(--blue); }
+  .pill.white { background: #2a2a26; color: var(--white); }
+  .note { color: var(--muted); font-size: 10.5px; font-style: italic; }
+  .ref-mark { color: var(--muted); font-size: 10px; vertical-align: super; }
+
+  footer {
+    margin-top: 40px;
+    color: var(--muted);
+    font-size: 11px;
+    border-top: 1px solid var(--line);
+    padding-top: 16px;
+    line-height: 1.7;
+  }
+  footer .refs { margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Smart Mushroom Grow-Light &middot; Week 9</div>
+    <h1>Practical Changes After Consultation with Mr. Nadun</h1>
+    <div class="sub">Farm-partner review &middot; experimental design revised</div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> Changes</h2>
+    <div class="changes">
+      <div class="card">
+        <div class="tag">Enclosure</div>
+        <p>Closed grow-box dropped &mdash; CO&#8322; buildup stalled development. Moved to open-shelf racking.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Isolation</div>
+        <p>Black polythene sheets separate light treatments while keeping airflow.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Replication</div>
+        <p>3 replication setups added for statistical &amp; engineering reliability.</p>
+      </div>
+      <div class="card">
+        <div class="tag">Spectrum</div>
+        <p>Red LED removed from mycelium phase &mdash; farming insight + transcriptomic evidence.<span class="ref-mark">[3,4]</span></p>
+      </div>
+      <div class="card">
+        <div class="tag">Control</div>
+        <p>White LED baseline setup added alongside the Green/Blue experimental groups.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> Updated Experimental Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Group Type</th>
+          <th>Replication Sets</th>
+          <th>Phase 1 &middot; Mycelium Running<br>(Day 1&ndash;30)</th>
+          <th>Phase 2 &middot; Pinning Transition<br>(Day 31&ndash;40)</th>
+          <th>Phase 3 &middot; Fruiting Body Growth<br>(Day 41&ndash;70)</th>
+          <th>Physical Isolation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="group">Experimental Setup</td>
+          <td>Replication 01<br>Replication 02<br>Replication 03</td>
+          <td><span class="pill dark">Total Darkness</span><br>All LEDs OFF<br><span class="note">uninhibited colonization<span class="ref-mark">[1]</span></span></td>
+          <td><span class="pill green">Green LED</span><br>&asymp;525 nm<br><span class="note">triggers pinning genes<span class="ref-mark">[2]</span></span></td>
+          <td><span class="pill blue">Blue LED</span><br>&asymp;470 nm<br><span class="note">drives cap expansion<span class="ref-mark">[3]</span></span></td>
+          <td>Suspended black polythene between open shelves &mdash; blocks light bleed, keeps cross-ventilation.</td>
+        </tr>
+        <tr>
+          <td class="group">Control Setup</td>
+          <td>Baseline Control</td>
+          <td><span class="pill dark">Total Darkness</span><br>All LEDs OFF</td>
+          <td><span class="pill white">White LED</span><br>Standard baseline</td>
+          <td><span class="pill white">White LED</span><br>Standard baseline</td>
+          <td>Separated by black polythene boundaries from experimental rows.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    References
+    <div class="refs">
+      [1] Identification of Blue-Light Photoresponse Genes in Oyster Mushroom Mycelia (2010)<br>
+      [2] Effects of Light Wavelength and Intensity on the Expression of Photoresponse Genes in Oyster Mushroom Mycelia (2011)<br>
+      [3] Regulation of Primary Metabolic Pathways in Oyster Mushroom Mycelia Induced by Blue Light Stimulation (2015)<br>
+      [4] Transcriptomic Profiling Sheds Light on the Blue-Light and Red-Light Response of Oyster Mushroom (Pleurotus ostreatus) (2020)
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

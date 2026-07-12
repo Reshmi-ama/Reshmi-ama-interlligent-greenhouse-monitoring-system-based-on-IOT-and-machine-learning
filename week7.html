@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Week 7 — LED Strategy for Mushroom Growth | IGMS FYP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d7a4f;
+            --secondary: #8bc34a;
+            --accent: #00bcd4;
+            --dark: #0f1f14;
+            --light: #f0f7f2;
+            --text-muted: #6c8f76;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #222; background: #f8f9fa; }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; }
+
+        .top-bar { background: var(--dark); padding: 14px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .top-bar a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; }
+        .top-bar a:hover { color: var(--secondary); }
+        .top-bar .brand { color: var(--secondary); font-weight: 700; font-size: 0.95rem; }
+
+        .week-hero { background: linear-gradient(135deg, #0f1f14 0%, #1a3d27 100%); padding: 60px 0 50px; color: #fff; }
+        .phase-label { display: inline-block; background: rgba(139,195,74,0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+        .week-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 14px; line-height: 1.2; }
+        .week-hero p { color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 650px; margin-bottom: 24px; }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139,195,74,0.15); border: 1px solid var(--secondary); color: var(--secondary); padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+        .meta-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .meta-chip { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); padding: 6px 14px; border-radius: 6px; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; }
+        .meta-chip i { color: var(--secondary); }
+
+        .content-wrap { padding: 50px 0 80px; }
+        .main-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 24px; }
+        .section-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--light); margin-left: 10px; }
+
+        /* KEY FINDINGS */
+        .finding-row { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; font-size: 0.88rem; }
+        .finding-row:last-child { border-bottom: none; }
+        .finding-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--secondary); flex-shrink: 0; margin-top: 5px; }
+
+        /* STAGE CARDS */
+        .stage-card { border-radius: 10px; padding: 20px 22px; margin-bottom: 14px; border: 1px solid #eee; }
+        .stage-card.red-stage { border-left: 5px solid #e74c3c; background: #fff8f8; }
+        .stage-card.green-stage { border-left: 5px solid #27ae60; background: #f8fff8; }
+        .stage-card.blue-stage { border-left: 5px solid #2980b9; background: #f8f8ff; }
+
+        .stage-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .stage-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: #fff; flex-shrink: 0; }
+        .red-stage .stage-num { background: #e74c3c; }
+        .green-stage .stage-num { background: #27ae60; }
+        .blue-stage .stage-num { background: #2980b9; }
+
+        .stage-header h6 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; margin: 0; }
+        .stage-header .days { font-size: 0.75rem; color: var(--text-muted); }
+
+        .stage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+        @media (max-width: 600px) { .stage-grid { grid-template-columns: 1fr 1fr; } }
+        .stage-item { background: rgba(255,255,255,0.7); border-radius: 6px; padding: 8px 12px; font-size: 0.78rem; }
+        .stage-item .label { color: var(--text-muted); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+        .stage-item .value { font-weight: 700; color: var(--dark); }
+
+        /* EXPERIMENT TABLE */
+        .exp-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .exp-table th { background: var(--primary); color: #fff; padding: 10px 14px; text-align: left; font-family: 'Inter', sans-serif; font-weight: 600; }
+        .exp-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; line-height: 1.5; }
+        .exp-table tr:hover td { background: var(--light); }
+        .chamber-a { color: #666; font-weight: 700; }
+        .chamber-b { color: #e74c3c; font-weight: 700; }
+        .chamber-c { color: #2980b9; font-weight: 700; }
+
+        /* LED COLOR PILLS */
+        .led-red { display: inline-block; background: #fdecea; color: #c0392b; border: 1px solid #f1948a; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+        .led-green { display: inline-block; background: #eafaf1; color: #1e8449; border: 1px solid #82e0aa; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+        .led-blue { display: inline-block; background: #eaf2ff; color: #1a5276; border: 1px solid #85c1e9; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+        .led-white { display: inline-block; background: #f9f9f9; color: #555; border: 1px solid #ccc; padding: 2px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+
+        /* METRICS */
+        .metric-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--light); color: var(--primary); border: 1px solid #c8e6c9; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; margin: 4px; }
+
+        /* SIDEBAR */
+        .sidebar-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 20px; }
+        .sidebar-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.88rem; color: var(--dark); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.82rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:first-child { color: var(--text-muted); }
+        .info-row span:last-child { font-weight: 600; color: var(--dark); }
+
+        .week-nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        .week-btn { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; text-decoration: none; border: 2px solid transparent; }
+        .week-btn.done { background: var(--primary); color: #fff; }
+        .week-btn.upcoming { background: #f0f0f0; color: #aaa; }
+        .week-btn.active-week { border-color: var(--dark) !important; box-shadow: 0 0 0 2px var(--secondary); }
+
+        .nav-footer { background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+        .nav-btn.prev { background: var(--light); color: var(--primary); }
+        .nav-btn.next { background: var(--primary); color: #fff; }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="index.html" class="brand">🌿 IGMS · IoT &amp; ML</a>
+        <div class="d-flex gap-3">
+            <a href="index.html#timeline"><i class="fas fa-list me-1"></i>All Weeks</a>
+            <a href="index.html#team"><i class="fas fa-users me-1"></i>Team</a>
+            <a href="index.html#contact"><i class="fas fa-envelope me-1"></i>Contact</a>
+        </div>
+    </div>
+</div>
+
+<!-- HERO -->
+<div class="week-hero">
+    <div class="container">
+        <span class="phase-label">Phase 2 · Experiment Design</span>
+        <h1>Week 7: LED Strategy for Mushroom Growth</h1>
+        <p>Developed a stage-by-stage LED lighting strategy and designed a 3-chamber experiment to test how light colour and photoperiod affect oyster mushroom yield, size, and quality.</p>
+        <div class="status-badge"><i class="fas fa-check-circle"></i> Completed</div>
+        <div class="meta-chips">
+            <span class="meta-chip"><i class="fas fa-calendar"></i> May 2026</span>
+            <span class="meta-chip"><i class="fas fa-clock"></i> Week 7 of 14</span>
+            <span class="meta-chip"><i class="fas fa-flask"></i> Experiment Design</span>
+            <span class="meta-chip"><i class="fas fa-university"></i> EEE · University of Peradeniya</span>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+
+                <!-- Key Findings -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-lightbulb"></i> Key Findings from Literature</p>
+                    <div class="finding-row">
+                        <div class="finding-dot"></div>
+                        <span>Light colour and duration do <strong>not significantly affect total yield or growth speed</strong>, but are crucial for improving <strong>physical size and quality</strong>.</span>
+                    </div>
+                    <div class="finding-row">
+                        <div class="finding-dot"></div>
+                        <span><strong>Blue light (~475nm)</strong> promotes the largest caps, thickest stems, and highest fresh weight in the fruiting stage.</span>
+                    </div>
+                    <div class="finding-row">
+                        <div class="finding-dot"></div>
+                        <span><strong>White light (W:12h)</strong> produces the heaviest mushrooms on average — a strong alternative to blue for yield-focused farming.</span>
+                    </div>
+                    <div class="finding-row">
+                        <div class="finding-dot"></div>
+                        <span><strong>Green light</strong> accelerates the reproductive stage and shortens the time to pinhead formation.</span>
+                    </div>
+                    <div class="finding-row">
+                        <div class="finding-dot"></div>
+                        <span><strong>Red light</strong> promotes early, strong mycelium growth during the vegetative stage but must be switched off after full colonisation.</span>
+                    </div>
+                </div>
+
+                <!-- Stage-by-Stage LED Strategy -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-layer-group"></i> Stage-by-Stage LED Strategy</p>
+
+                    <!-- Stage 1 -->
+                    <div class="stage-card red-stage">
+                        <div class="stage-header">
+                            <div class="stage-num">1</div>
+                            <div>
+                                <h6>Mycelium Running — Vegetative Stage</h6>
+                                <span class="days">Day 1–21 &nbsp;·&nbsp; Until bag is fully white</span>
+                            </div>
+                        </div>
+                        <div class="stage-grid">
+                            <div class="stage-item"><div class="label">LED Colour</div><div class="value"><span class="led-red">🔴 Red</span></div></div>
+                            <div class="stage-item"><div class="label">Cycle</div><div class="value">12h ON / 12h OFF</div></div>
+                            <div class="stage-item"><div class="label">Duration</div><div class="value">14 – 21 Days</div></div>
+                            <div class="stage-item" style="grid-column: span 3;"><div class="label">Why</div><div class="value" style="font-weight:400; font-size:0.8rem;">Red light promotes early strong mycelium growth. Must be switched OFF once fully colonised.</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 2 -->
+                    <div class="stage-card green-stage">
+                        <div class="stage-header">
+                            <div class="stage-num">2</div>
+                            <div>
+                                <h6>Pinhead Emergence — Pinning Stage</h6>
+                                <span class="days">Day 22–25 &nbsp;·&nbsp; Until small pins form</span>
+                            </div>
+                        </div>
+                        <div class="stage-grid">
+                            <div class="stage-item"><div class="label">LED Colour</div><div class="value"><span class="led-green">🟢 Green</span> / <span class="led-white">⚪ White</span></div></div>
+                            <div class="stage-item"><div class="label">Cycle</div><div class="value">12h ON / 12h OFF</div></div>
+                            <div class="stage-item"><div class="label">Duration</div><div class="value">3 – 7 Days</div></div>
+                            <div class="stage-item" style="grid-column: span 3;"><div class="label">Why</div><div class="value" style="font-weight:400; font-size:0.8rem;">Green light accelerates the reproductive stage and shortens time to pinhead formation.</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Stage 3 -->
+                    <div class="stage-card blue-stage">
+                        <div class="stage-header">
+                            <div class="stage-num">3</div>
+                            <div>
+                                <h6>Fruiting Body Development — Growth Stage</h6>
+                                <span class="days">Day 26–31 &nbsp;·&nbsp; Until cap edges start curling upward</span>
+                            </div>
+                        </div>
+                        <div class="stage-grid">
+                            <div class="stage-item"><div class="label">LED Colour</div><div class="value"><span class="led-blue">🔵 Blue (~475nm)</span></div></div>
+                            <div class="stage-item"><div class="label">Option A — Max Size</div><div class="value">15h ON / 9h OFF</div></div>
+                            <div class="stage-item"><div class="label">Option B — Max Yield</div><div class="value">3h ON / 21h OFF</div></div>
+                            <div class="stage-item" style="grid-column: span 3;"><div class="label">Why</div><div class="value" style="font-weight:400; font-size:0.8rem;">Blue light yields the largest caps, thickest stems, and highest fresh weight. White LED is a strong alternative for heavy yields.</div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experiment Design -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-flask"></i> Experiment 01 — 3-Chamber Design</p>
+                    <table class="exp-table">
+                        <thead>
+                            <tr>
+                                <th>Chamber</th>
+                                <th>LED Colour Strategy</th>
+                                <th>Photoperiod</th>
+                                <th>Objective</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="chamber-a">Chamber A</span><br><small>Control Group</small></td>
+                                <td><span class="led-white">⚪ White LED</span> — all stages</td>
+                                <td>12h ON / 12h OFF throughout</td>
+                                <td>Baseline benchmark — proves smart system outperforms standard methods</td>
+                            </tr>
+                            <tr>
+                                <td><span class="chamber-b">Chamber B</span><br><small>Yield Focus</small></td>
+                                <td>
+                                    <span class="led-red">🔴 Red</span> → Mycelium<br>
+                                    <span class="led-green">🟢 Green</span> → Pinning<br>
+                                    <span class="led-blue">🔵 Blue</span> → Fruiting
+                                </td>
+                                <td>Mycelium &amp; Pinning: 12h/12h<br>Fruiting: <strong>8h ON / 16h OFF</strong></td>
+                                <td>Tests if short light burst + colour switching maximises total flush weight and pin count</td>
+                            </tr>
+                            <tr>
+                                <td><span class="chamber-c">Chamber C</span><br><small>Size Focus</small></td>
+                                <td>
+                                    <span class="led-red">🔴 Red</span> → Mycelium<br>
+                                    <span class="led-green">🟢 Green</span> → Pinning<br>
+                                    <span class="led-blue">🔵 Blue</span> → Fruiting
+                                </td>
+                                <td>Mycelium &amp; Pinning: 12h/12h<br>Fruiting: <strong>15h ON / 9h OFF</strong></td>
+                                <td>Tests if extended 15-hour photoperiod drives maximum individual mushroom size and stem thickness</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Data Collection -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-chart-bar"></i> Data Collection Metrics</p>
+                    <p style="font-size:0.88rem; color:#555; margin-bottom:14px;">The following variables will be logged for each chamber to produce solid engineering results:</p>
+                    <div>
+                        <span class="metric-chip"><i class="fas fa-clock"></i> Days to Pinning</span>
+                        <span class="metric-chip"><i class="fas fa-weight"></i> Total Fresh Yield (g)</span>
+                        <span class="metric-chip"><i class="fas fa-ruler-horizontal"></i> Cap Diameter (mm)</span>
+                        <span class="metric-chip"><i class="fas fa-ruler-vertical"></i> Stem Thickness (mm)</span>
+                    </div>
+                    <p style="font-size:0.82rem; color:var(--text-muted); margin-top:14px; margin-bottom:0;">If Chamber B yields the most mass but Chamber C yields the largest individual mushrooms, the microcontroller will be programmed with selectable presets — <strong>Mode 1: Max Yield</strong> and <strong>Mode 2: Max Size</strong>.</p>
+                </div>
+
+                <!-- Nav Footer -->
+                <div class="nav-footer">
+                    <a href="week6.html" class="nav-btn prev"><i class="fas fa-arrow-left"></i> Week 6: Circuit Design</a>
+                    <span style="font-size:0.82rem; color:#aaa;">Week 7 of 14</span>
+                    <a href="index.html#timeline" class="nav-btn next">Back to Timeline <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="col-lg-4">
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Week Info</p>
+                    <div class="info-row"><span>Phase</span><span>Experiment Design</span></div>
+                    <div class="info-row"><span>Week</span><span>7 of 14</span></div>
+                    <div class="info-row"><span>Period</span><span>May 2026</span></div>
+                    <div class="info-row"><span>Status</span><span style="color:var(--primary);">✓ Completed</span></div>
+                    <div class="info-row"><span>Chambers</span><span>3 (A, B, C)</span></div>
+                    <div class="info-row"><span>LED Stages</span><span>3 (Red→Green→Blue)</span></div>
+                    <div class="info-row"><span>Metrics</span><span>4 measurements</span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">LED Summary</p>
+                    <div class="info-row"><span>Stage 1</span><span><span class="led-red">🔴 Red</span></span></div>
+                    <div class="info-row"><span>Stage 2</span><span><span class="led-green">🟢 Green</span></span></div>
+                    <div class="info-row"><span>Stage 3</span><span><span class="led-blue">🔵 Blue</span></span></div>
+                    <div class="info-row"><span>Control</span><span><span class="led-white">⚪ White</span></span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Jump to Week</p>
+                    <div class="week-nav">
+                        <a href="week1.html" class="week-btn done">1</a>
+                        <a href="week2.html" class="week-btn done">2</a>
+                        <a href="week3.html" class="week-btn done">3</a>
+                        <a href="week4.html" class="week-btn done">4</a>
+                        <a href="week5.html" class="week-btn done">5</a>
+                        <a href="week6.html" class="week-btn done">6</a>
+                        <a href="week7.html" class="week-btn done active-week">7</a>
+                        <span class="week-btn upcoming">8</span>
+                        <span class="week-btn upcoming">9</span>
+                        <span class="week-btn upcoming">10</span>
+                        <span class="week-btn upcoming">11</span>
+                        <span class="week-btn upcoming">12</span>
+                        <span class="week-btn upcoming">13</span>
+                        <span class="week-btn upcoming">14</span>
+                    </div>
+                    <p style="font-size:0.72rem; color:#aaa; margin-top:12px; margin-bottom:0;">🟢 Completed &nbsp; ⬜ Upcoming</p>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Team</p>
+                    <div style="font-size:0.82rem;">
+                        <div class="info-row"><span>DELAI A.M.R.A.N.</span><span style="color:var(--primary);">E/21/081</span></div>
+                        <div class="info-row"><span>DISANAYAKE A.M.R.M.</span><span style="color:var(--primary);">E/21/103</span></div>
+                        <div class="info-row"><span>LAKSHANI M.B.N.W.</span><span style="color:var(--primary);">E/21/234</span></div>
+                        <div class="info-row"><span>Supervisor</span><span style="color:var(--primary);">Himal A. Suraweera</span></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card" style="background: var(--dark); color:#fff;">
+                    <p class="sidebar-title" style="color:var(--secondary);">Project</p>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.7); margin-bottom:10px;">Intelligent Greenhouse Monitoring System Based on IoT and Machine Learning</p>
+                    <p style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin:0;">EEE · University of Peradeniya · 2025–2026</p>
+                    <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">LED</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">VLC</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">IoT</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">ESP32</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Week 10 — CNN Stage Identification</title>
+<style>
+  :root {
+    --bg: #12140f;
+    --panel: #1b1d16;
+    --ink: #eae6da;
+    --muted: #9a9a8c;
+    --line: #33362b;
+    --amber: #e0a458;
+    --green: #4ade80;
+    --blue: #5eb3f6;
+    --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --serif: 'Fraunces', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    padding: 48px 24px 80px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 36px; }
+  .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 28px; margin: 8px 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  section { margin-bottom: 42px; }
+  h2 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 0 0 16px; display: flex; align-items: baseline; gap: 10px; }
+  h2 .num { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+
+  .stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stage-card { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: var(--panel); border-top: 3px solid var(--stage-color); }
+  .stage-card.s1 { --stage-color: #cfcfc2; }
+  .stage-card.s2 { --stage-color: var(--green); }
+  .stage-card.s3 { --stage-color: var(--blue); }
+  .stage-card .name { font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+  .stage-card svg { width: 100%; height: 90px; display: block; margin-bottom: 10px; }
+  .stage-card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .workflow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .wf-step { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--panel); position: relative; }
+  .wf-step .n { color: var(--amber); font-size: 20px; font-weight: 700; font-family: var(--serif); }
+  .wf-step .t { font-weight: 700; font-size: 12.5px; margin: 6px 0 4px; }
+  .wf-step p { margin: 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+  .cnn-diagram { border: 1px solid var(--line); border-radius: 8px; padding: 20px; background: var(--panel); }
+  .cnn-diagram svg { width: 100%; height: auto; display: block; }
+
+  .layers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+  .layer-card { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--panel); }
+  .layer-card .t { font-weight: 700; font-size: 12.5px; color: var(--amber); margin-bottom: 6px; }
+  .layer-card p { margin: 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+  .bp-flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .bp-step { border: 1px solid var(--line); border-radius: 20px; padding: 8px 16px; font-size: 11.5px; background: var(--panel); }
+  .bp-arrow { color: var(--muted); font-size: 14px; }
+
+  footer { margin-top: 40px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Smart Mushroom Grow-Light &middot; Week 10</div>
+    <h1>Identifying Growth Stage with a CNN</h1>
+    <div class="sub">Computer vision &middot; image classification &middot; ESP32-CAM deployment</div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span> The 3 Stages</h2>
+    <div class="stages">
+      <div class="stage-card s1">
+        <div class="name">Mycelium Running</div>
+        <svg viewBox="0 0 200 90"><rect width="200" height="90" fill="#0d0f0a"/><g stroke="#cfcfc2" stroke-width="1" fill="none" opacity="0.8">
+          <path d="M20 70 Q40 40 60 55 T100 45 T140 60 T180 40"/>
+          <path d="M15 50 Q50 65 80 50 T150 55 T190 65"/>
+          <path d="M25 30 Q55 50 90 35 T160 40"/>
+        </g></svg>
+        <p>Web-like white threads spreading across a dark substrate.</p>
+      </div>
+      <div class="stage-card s2">
+        <div class="name">Pinning</div>
+        <svg viewBox="0 0 200 90"><rect width="200" height="90" fill="#0d0f0a"/>
+          <circle cx="55" cy="55" r="6" fill="#4ade80" opacity="0.9"/>
+          <circle cx="80" cy="65" r="5" fill="#4ade80" opacity="0.8"/>
+          <circle cx="105" cy="50" r="7" fill="#4ade80" opacity="0.9"/>
+          <circle cx="130" cy="62" r="4" fill="#4ade80" opacity="0.7"/>
+          <circle cx="150" cy="45" r="6" fill="#4ade80" opacity="0.85"/>
+        </svg>
+        <p>Tiny dense clusters and bumps breaking through the surface.</p>
+      </div>
+      <div class="stage-card s3">
+        <div class="name">Fruiting Body</div>
+        <svg viewBox="0 0 200 90"><rect width="200" height="90" fill="#0d0f0a"/>
+          <ellipse cx="100" cy="40" rx="42" ry="16" fill="#5eb3f6" opacity="0.85"/>
+          <rect x="94" y="40" width="12" height="35" fill="#3a4a55"/>
+        </svg>
+        <p>Large cap diameter and extended stem &mdash; macro features.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> 4-Step Implementation</h2>
+    <div class="workflow">
+      <div class="wf-step"><div class="n">01</div><div class="t">Data Collection</div><p>100&ndash;200 photos per stage inside the box.</p></div>
+      <div class="wf-step"><div class="n">02</div><div class="t">Labeling</div><p>Sort into Mycelium / Pinning / Fruiting folders in Roboflow.</p></div>
+      <div class="wf-step"><div class="n">03</div><div class="t">Training</div><p>Edge Impulse + MobileNetV2 model training.</p></div>
+      <div class="wf-step"><div class="n">04</div><div class="t">Deployment</div><p>Export as Arduino/ESP32 C++ library, flash to ESP32-CAM.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> How a CNN Sees</h2>
+    <div class="cnn-diagram">
+      <svg viewBox="0 0 760 140" xmlns="http://www.w3.org/2000/svg">
+        <!-- input image -->
+        <rect x="10" y="35" width="70" height="70" rx="4" fill="none" stroke="#9a9a8c"/>
+        <text x="45" y="122" text-anchor="middle" fill="#9a9a8c" font-size="10" font-family="monospace">Image</text>
+        <!-- arrow -->
+        <path d="M85 70 H130" stroke="#e0a458" stroke-width="1.5" marker-end="url(#ah)"/>
+        <!-- conv layer -->
+        <rect x="135" y="30" width="90" height="80" rx="4" fill="none" stroke="#5eb3f6"/>
+        <rect x="145" y="40" width="70" height="60" rx="3" fill="none" stroke="#5eb3f6" opacity="0.5"/>
+        <text x="180" y="122" text-anchor="middle" fill="#5eb3f6" font-size="10" font-family="monospace">Convolution</text>
+        <path d="M230 70 H275" stroke="#e0a458" stroke-width="1.5" marker-end="url(#ah)"/>
+        <!-- pooling -->
+        <rect x="280" y="40" width="70" height="60" rx="4" fill="none" stroke="#4ade80"/>
+        <text x="315" y="122" text-anchor="middle" fill="#4ade80" font-size="10" font-family="monospace">Pooling</text>
+        <path d="M355 70 H400" stroke="#e0a458" stroke-width="1.5" marker-end="url(#ah)"/>
+        <!-- fully connected -->
+        <g>
+          <circle cx="430" cy="45" r="6" fill="#eae6da" opacity="0.8"/>
+          <circle cx="430" cy="70" r="6" fill="#eae6da" opacity="0.8"/>
+          <circle cx="430" cy="95" r="6" fill="#eae6da" opacity="0.8"/>
+          <circle cx="480" cy="55" r="6" fill="#eae6da" opacity="0.8"/>
+          <circle cx="480" cy="85" r="6" fill="#eae6da" opacity="0.8"/>
+          <g stroke="#66695c" stroke-width="0.7">
+            <line x1="436" y1="45" x2="474" y2="55"/>
+            <line x1="436" y1="45" x2="474" y2="85"/>
+            <line x1="436" y1="70" x2="474" y2="55"/>
+            <line x1="436" y1="70" x2="474" y2="85"/>
+            <line x1="436" y1="95" x2="474" y2="55"/>
+            <line x1="436" y1="95" x2="474" y2="85"/>
+          </g>
+        </g>
+        <text x="460" y="122" text-anchor="middle" fill="#eae6da" font-size="10" font-family="monospace">Fully Connected</text>
+        <path d="M495 70 H540" stroke="#e0a458" stroke-width="1.5" marker-end="url(#ah)"/>
+        <!-- output -->
+        <text x="550" y="50" fill="#cfcfc2" font-size="11" font-family="monospace">Mycelium 4%</text>
+        <text x="550" y="70" fill="#4ade80" font-size="11" font-family="monospace">Pinning 95%</text>
+        <text x="550" y="90" fill="#5eb3f6" font-size="11" font-family="monospace">Fruiting 1%</text>
+        <defs>
+          <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#e0a458"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="layers">
+      <div class="layer-card"><div class="t">Shallow Layers</div><p>Detect lines, edges, sharp color changes.</p></div>
+      <div class="layer-card"><div class="t">Middle Layers</div><p>Combine lines into textures &amp; shapes (webs, circles).</p></div>
+      <div class="layer-card"><div class="t">Deep Layers</div><p>Assemble parts &mdash; caps, gills, stems.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Backpropagation</h2>
+    <div class="bp-flow">
+      <div class="bp-step">Forward pass &rarr; guess</div>
+      <span class="bp-arrow">&rarr;</span>
+      <div class="bp-step">Loss function &rarr; error</div>
+      <span class="bp-arrow">&rarr;</span>
+      <div class="bp-step">Backprop (chain rule) &rarr; update filters</div>
+      <span class="bp-arrow">&rarr;</span>
+      <div class="bp-step">Optimizer: Adam / SGD</div>
+    </div>
+  </section>
+
+  <footer>Week 10 &middot; CNN-based stage identification for the grow-light control loop</footer>
+
+</div>
+</body>
+</html>
