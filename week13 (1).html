@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Week 13 — ML & YOLOv8 Stage Detection | IGMS FYP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2d7a4f; --secondary: #8bc34a; --accent: #00bcd4;
+            --dark: #0f1f14; --light: #f0f7f2; --text-muted: #6c8f76;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #222; background: #f8f9fa; }
+        h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; }
+
+        .top-bar { background: var(--dark); padding: 14px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .top-bar a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem; }
+        .top-bar a:hover { color: var(--secondary); }
+        .top-bar .brand { color: var(--secondary); font-weight: 700; font-size: 0.95rem; }
+
+        .week-hero { background: linear-gradient(135deg, #0f1f14 0%, #1a3d27 100%); padding: 60px 0 50px; color: #fff; position: relative; overflow: hidden; }
+        .week-hero::before { content: ''; position: absolute; left: -100px; bottom: -100px; width: 350px; height: 350px; border-radius: 50%; background: rgba(0,188,212,0.05); }
+        .phase-label { display: inline-block; background: rgba(139,195,74,0.2); border: 1px solid var(--secondary); color: var(--secondary); padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+        .week-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 14px; line-height: 1.2; position: relative; z-index: 1; }
+        .week-hero p { color: rgba(255,255,255,0.75); font-size: 1rem; max-width: 650px; margin-bottom: 24px; position: relative; z-index: 1; }
+        .status-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139,195,74,0.15); border: 1px solid var(--secondary); color: var(--secondary); padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+        .meta-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        .meta-chip { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); padding: 6px 14px; border-radius: 6px; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; }
+        .meta-chip i { color: var(--secondary); }
+
+        .content-wrap { padding: 50px 0 80px; }
+        .main-card { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 24px; }
+        .section-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--light); margin-left: 10px; }
+
+        /* STATUS BANNER */
+        .status-banner { background: linear-gradient(135deg, #1a5235, #2d7a4f); border-radius: 12px; padding: 24px 28px; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 18px; }
+        .status-banner .s-icon { font-size: 2.8rem; flex-shrink: 0; }
+        .status-banner h5 { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .status-banner p { margin: 0; font-size: 0.88rem; color: rgba(255,255,255,0.9); line-height: 1.6; }
+
+        /* BULLET LIST */
+        .work-list { list-style: none; padding: 0; margin: 0; }
+        .work-list li { padding: 11px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 14px; font-size: 0.88rem; line-height: 1.6; }
+        .work-list li:last-child { border-bottom: none; }
+        .work-list li::before { content: ''; width: 8px; height: 8px; background: var(--secondary); border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+        /* STAGE DETECTION CARDS */
+        .stage-detect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 4px; }
+        @media (max-width: 600px) { .stage-detect-grid { grid-template-columns: 1fr; } }
+
+        .stage-detect-card { border-radius: 10px; padding: 22px; border: 2px solid; position: relative; overflow: hidden; }
+        .stage-detect-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; opacity: 0.08; }
+        .card-pinning { border-color: #f39c12; background: #fffbf0; }
+        .card-pinning::before { background: #f39c12; }
+        .card-fruiting { border-color: #2980b9; background: #f0f7ff; }
+        .card-fruiting::before { background: #2980b9; }
+
+        .sdc-icon { font-size: 2rem; margin-bottom: 10px; }
+        .sdc-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; }
+        .card-pinning .sdc-title { color: #b7770d; }
+        .card-fruiting .sdc-title { color: #1a5276; }
+        .sdc-desc { font-size: 0.82rem; color: #555; line-height: 1.55; margin-bottom: 10px; }
+        .sdc-traits { display: flex; flex-wrap: wrap; gap: 5px; }
+        .trait-chip { font-size: 0.68rem; padding: 2px 9px; border-radius: 12px; font-weight: 700; }
+        .card-pinning .trait-chip { background: rgba(243,156,18,0.15); color: #b7770d; }
+        .card-fruiting .trait-chip { background: rgba(41,128,185,0.15); color: #1a5276; }
+
+        /* YOLO PIPELINE */
+        .pipeline { display: flex; align-items: stretch; gap: 0; margin: 4px 0 16px; flex-wrap: wrap; }
+        .pipe-step { flex: 1; min-width: 100px; background: var(--light); padding: 16px 12px; text-align: center; border-right: 2px solid #fff; position: relative; }
+        .pipe-step:first-child { border-radius: 8px 0 0 8px; }
+        .pipe-step:last-child { border-right: none; border-radius: 0 8px 8px 0; }
+        .pipe-step .p-icon { font-size: 1.4rem; margin-bottom: 6px; }
+        .pipe-step .p-label { font-size: 0.72rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .pipe-step .p-sub { font-size: 0.66rem; color: var(--text-muted); margin-top: 2px; }
+        @media (max-width: 600px) { .pipeline { flex-direction: column; } .pipe-step { border-right: none; border-bottom: 2px solid #fff; } .pipe-step:last-child { border-bottom: none; } }
+
+        /* YOLO INFO */
+        .yolo-box { background: #0f1f14; border-radius: 10px; padding: 22px 24px; color: #fff; margin-bottom: 14px; }
+        .yolo-box h6 { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--secondary); font-size: 0.88rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .yolo-box p { font-size: 0.83rem; color: rgba(255,255,255,0.8); margin: 0; line-height: 1.6; }
+        .yolo-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+        .yolo-fact { background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; }
+        .yolo-fact .yf-label { font-size: 0.68rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 3px; }
+        .yolo-fact .yf-val { font-size: 0.82rem; color: #fff; font-weight: 600; }
+
+        /* DATASET STATUS */
+        .dataset-status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 600px) { .dataset-status { grid-template-columns: 1fr 1fr; } }
+        .ds-card { background: var(--light); border-radius: 10px; padding: 16px; text-align: center; border-top: 3px solid var(--primary); }
+        .ds-card .ds-icon { font-size: 1.5rem; margin-bottom: 6px; }
+        .ds-card .ds-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px; }
+        .ds-card .ds-val { font-size: 0.9rem; font-weight: 700; color: var(--dark); }
+        .ds-card .ds-status { font-size: 0.7rem; color: var(--primary); font-weight: 600; margin-top: 3px; }
+        .ds-card.in-progress { border-top-color: var(--accent); }
+        .ds-card.in-progress .ds-status { color: var(--accent); }
+
+        /* HIGHLIGHT */
+        .highlight-card { background: var(--light); border-left: 4px solid var(--primary); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+        .highlight-card h6 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--primary); margin-bottom: 4px; }
+        .highlight-card p { font-size: 0.82rem; color: #444; margin: 0; line-height: 1.55; }
+
+        /* SIDEBAR */
+        .sidebar-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); margin-bottom: 20px; }
+        .sidebar-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.88rem; color: var(--dark); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.82rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:first-child { color: var(--text-muted); }
+        .info-row span:last-child { font-weight: 600; color: var(--dark); font-size: 0.8rem; }
+
+        .week-nav { display: flex; gap: 6px; flex-wrap: wrap; }
+        .week-btn { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; text-decoration: none; border: 2px solid transparent; }
+        .week-btn.done { background: var(--primary); color: #fff; }
+        .week-btn.upcoming { background: #f0f0f0; color: #aaa; }
+        .week-btn.active-week { border-color: var(--dark) !important; box-shadow: 0 0 0 2px var(--secondary); }
+
+        .nav-footer { background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .nav-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+        .nav-btn.prev { background: var(--light); color: var(--primary); }
+        .nav-btn.next { background: var(--primary); color: #fff; }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="index.html" class="brand">🌿 IGMS · IoT &amp; ML</a>
+        <div class="d-flex gap-3">
+            <a href="index.html#timeline"><i class="fas fa-list me-1"></i>All Weeks</a>
+            <a href="index.html#team"><i class="fas fa-users me-1"></i>Team</a>
+            <a href="index.html#contact"><i class="fas fa-envelope me-1"></i>Contact</a>
+        </div>
+    </div>
+</div>
+
+<!-- HERO -->
+<div class="week-hero">
+    <div class="container">
+        <span class="phase-label">Phase 4 · Machine Learning</span>
+        <h1>Week 13: ML for Mushroom Stage Detection</h1>
+        <p>Studied machine learning approaches for identifying mushroom growth stages — focusing on detecting <strong>pinning</strong> and <strong>fruiting</strong> stages using YOLOv8, while building a custom dataset from farm photos.</p>
+        <div class="status-badge"><i class="fas fa-check-circle"></i> Completed</div>
+        <div class="meta-chips">
+            <span class="meta-chip"><i class="fas fa-calendar"></i> July 2026</span>
+            <span class="meta-chip"><i class="fas fa-clock"></i> Week 13 of 14</span>
+            <span class="meta-chip"><i class="fas fa-brain"></i> YOLOv8 · Dataset</span>
+            <span class="meta-chip"><i class="fas fa-university"></i> EEE · University of Peradeniya</span>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-wrap">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-8">
+
+                <!-- Status banner -->
+                <div class="status-banner">
+                    <div class="s-icon">🧠</div>
+                    <div>
+                        <h5>📊 Dataset Building In Progress</h5>
+                        <p>Photos captured every 30 minutes by the Raspberry Pi camera at Uhumeeya farm are being downloaded, organised, and labelled to build a custom <strong>Sri Lankan oyster mushroom dataset</strong> for YOLOv8 training.</p>
+                    </div>
+                </div>
+
+                <!-- What We Did -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-tasks"></i> What We Did This Week</p>
+                    <ul class="work-list">
+                        <li>Studied machine learning methods for <strong>mushroom growth stage classification</strong> — focusing on computer vision approaches suited to detecting visual changes in mushroom bags on racks.</li>
+                        <li>Identified the two most critical stages to detect: <strong>Pinning Stage</strong> (pinhead formation) and <strong>Fruiting Stage</strong> (mature mushroom body development) — both require different LED lighting and environmental conditions.</li>
+                        <li>Selected <strong>YOLOv8 (You Only Look Once v8)</strong> by Ultralytics as the detection model — chosen for its speed, accuracy, and ability to run inference in real-time on edge devices like Raspberry Pi.</li>
+                        <li>Reviewed YOLOv8 architecture and training workflow — understanding how to prepare a custom dataset with bounding box annotations for mushroom stage detection.</li>
+                        <li>Started <strong>downloading and organising photos</strong> from Google Drive — images captured by the Raspberry Pi at the Uhumeeya mushroom farm every 30 minutes.</li>
+                        <li>Began <strong>planning the annotation process</strong> — labelling pinning and fruiting stages in each image using bounding boxes to create training data for YOLOv8.</li>
+                        <li>Identified that accurate stage detection will allow the system to <strong>automatically switch LED colours</strong> (Green → Blue) at the right moment without relying on fixed day-count timers.</li>
+                    </ul>
+                </div>
+
+                <!-- Why Stage Detection -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-search"></i> Why Stage Detection Matters</p>
+                    <div class="stage-detect-grid">
+
+                        <div class="stage-detect-card card-pinning">
+                            <div class="sdc-icon">🟡</div>
+                            <div class="sdc-title">Pinning Stage Detection</div>
+                            <div class="sdc-desc">Tiny pinheads (primordia) start appearing on the surface of substrate bags. The system must detect this to switch from Green LED to Blue LED automatically.</div>
+                            <div class="sdc-traits">
+                                <span class="trait-chip">Small white dots</span>
+                                <span class="trait-chip">Day ~22–25</span>
+                                <span class="trait-chip">Switch to Blue LED</span>
+                            </div>
+                        </div>
+
+                        <div class="stage-detect-card card-fruiting">
+                            <div class="sdc-icon">🔵</div>
+                            <div class="sdc-title">Fruiting Stage Detection</div>
+                            <div class="sdc-desc">Full mushroom bodies with visible caps and stems. System must detect when caps start curling upward to trigger harvest alert and stop LED cycle.</div>
+                            <div class="sdc-traits">
+                                <span class="trait-chip">Visible caps</span>
+                                <span class="trait-chip">Day ~26–31</span>
+                                <span class="trait-chip">Harvest alert</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="highlight-card" style="margin-top:14px;">
+                        <h6>💡 Why Not Fixed Day-Count Timers?</h6>
+                        <p>Growth speed varies with temperature, humidity, and CO₂. Fixed timers like "switch to Blue on Day 22" may be too early or too late. Vision-based detection responds to <strong>actual biological state</strong>, not calendar days — making the system truly intelligent.</p>
+                    </div>
+                </div>
+
+                <!-- YOLOv8 -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-crosshairs"></i> Why YOLOv8?</p>
+
+                    <div class="yolo-box">
+                        <h6><i class="fas fa-bolt"></i> YOLOv8 — You Only Look Once v8</h6>
+                        <p>YOLOv8 by Ultralytics is a real-time object detection model that processes the entire image in a single forward pass — making it fast enough for periodic inference on a Raspberry Pi or edge server. It can detect multiple objects (pinheads, fruiting bodies) in one image simultaneously.</p>
+                        <div class="yolo-facts">
+                            <div class="yolo-fact"><div class="yf-label">Architecture</div><div class="yf-val">CNN + Anchor-free</div></div>
+                            <div class="yolo-fact"><div class="yf-label">Task</div><div class="yf-val">Object Detection</div></div>
+                            <div class="yolo-fact"><div class="yf-label">Input</div><div class="yf-val">Farm photos (RasPi)</div></div>
+                            <div class="yolo-fact"><div class="yf-label">Output</div><div class="yf-val">Stage + Bounding Box</div></div>
+                            <div class="yolo-fact"><div class="yf-label">Training</div><div class="yf-val">Custom dataset</div></div>
+                            <div class="yolo-fact"><div class="yf-label">Classes</div><div class="yf-val">Pinning, Fruiting</div></div>
+                        </div>
+                    </div>
+
+                    <p style="font-size:0.85rem; color:#555; margin-bottom:12px;"><strong>Detection → Action Pipeline:</strong></p>
+                    <div class="pipeline">
+                        <div class="pipe-step"><div class="p-icon">📷</div><div class="p-label">Capture</div><div class="p-sub">RasPi cam every 30 min</div></div>
+                        <div class="pipe-step"><div class="p-icon">☁️</div><div class="p-label">Upload</div><div class="p-sub">Google Drive</div></div>
+                        <div class="pipe-step"><div class="p-icon">🧠</div><div class="p-label">YOLOv8</div><div class="p-sub">Stage detection</div></div>
+                        <div class="pipe-step"><div class="p-icon">⚡</div><div class="p-label">Decision</div><div class="p-sub">Switch LED colour</div></div>
+                        <div class="pipe-step"><div class="p-icon">💡</div><div class="p-label">Action</div><div class="p-sub">ESP32 → LED change</div></div>
+                    </div>
+                </div>
+
+                <!-- Dataset Status -->
+                <div class="main-card">
+                    <p class="section-title"><i class="fas fa-database"></i> Dataset Status</p>
+                    <div class="dataset-status">
+                        <div class="ds-card">
+                            <div class="ds-icon">📷</div>
+                            <div class="ds-label">Source</div>
+                            <div class="ds-val">Uhumeeya Farm</div>
+                            <div class="ds-status">✓ Camera Live</div>
+                        </div>
+                        <div class="ds-card">
+                            <div class="ds-icon">🕐</div>
+                            <div class="ds-label">Capture Rate</div>
+                            <div class="ds-val">Every 30 min</div>
+                            <div class="ds-status">✓ Running</div>
+                        </div>
+                        <div class="ds-card in-progress">
+                            <div class="ds-icon">🏷️</div>
+                            <div class="ds-label">Annotation</div>
+                            <div class="ds-val">Bounding Boxes</div>
+                            <div class="ds-status">⟳ In Progress</div>
+                        </div>
+                        <div class="ds-card in-progress">
+                            <div class="ds-icon">🗂️</div>
+                            <div class="ds-label">Classes</div>
+                            <div class="ds-val">Pinning, Fruiting</div>
+                            <div class="ds-status">⟳ Labelling</div>
+                        </div>
+                        <div class="ds-card in-progress">
+                            <div class="ds-icon">🤖</div>
+                            <div class="ds-label">YOLOv8 Training</div>
+                            <div class="ds-val">Custom Model</div>
+                            <div class="ds-status">⟳ Upcoming</div>
+                        </div>
+                        <div class="ds-card in-progress">
+                            <div class="ds-icon">🌍</div>
+                            <div class="ds-label">Dataset Type</div>
+                            <div class="ds-val">Sri Lankan Farm</div>
+                            <div class="ds-status">First of its kind</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nav Footer -->
+                <div class="nav-footer">
+                    <a href="week12.html" class="nav-btn prev"><i class="fas fa-arrow-left"></i> Week 12: Hardware Build</a>
+                    <span style="font-size:0.82rem; color:#aaa;">Week 13 of 14</span>
+                    <a href="index.html#timeline" class="nav-btn next">Back to Timeline <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+            </div>
+
+            <!-- SIDEBAR -->
+            <div class="col-lg-4">
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Week Info</p>
+                    <div class="info-row"><span>Phase</span><span>Machine Learning</span></div>
+                    <div class="info-row"><span>Week</span><span>13 of 14</span></div>
+                    <div class="info-row"><span>Period</span><span>July 2026</span></div>
+                    <div class="info-row"><span>Status</span><span style="color:var(--primary);">✓ Completed</span></div>
+                    <div class="info-row"><span>Model</span><span>YOLOv8</span></div>
+                    <div class="info-row"><span>Classes</span><span>Pinning, Fruiting</span></div>
+                    <div class="info-row"><span>Dataset</span><span style="color:var(--accent);">⟳ Building</span></div>
+                    <div class="info-row"><span>Training</span><span style="color:var(--accent);">⟳ Upcoming</span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Stage → LED Action</p>
+                    <div class="info-row"><span>Mycelium</span><span style="color:#c0392b; font-size:0.78rem;">🔴 Red LED</span></div>
+                    <div class="info-row"><span>Pinning detected</span><span style="color:#1e8449; font-size:0.78rem;">🟢 Green LED</span></div>
+                    <div class="info-row"><span>Fruiting detected</span><span style="color:#1a5276; font-size:0.78rem;">🔵 Blue LED</span></div>
+                    <div class="info-row"><span>Cap curling</span><span style="color:#b7770d; font-size:0.78rem;">🔔 Harvest Alert</span></div>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Jump to Week</p>
+                    <div class="week-nav">
+                        <a href="week1.html" class="week-btn done">1</a>
+                        <a href="week2.html" class="week-btn done">2</a>
+                        <a href="week3.html" class="week-btn done">3</a>
+                        <a href="week4.html" class="week-btn done">4</a>
+                        <a href="week5.html" class="week-btn done">5</a>
+                        <a href="week6.html" class="week-btn done">6</a>
+                        <a href="week7.html" class="week-btn done">7</a>
+                        <a href="week8.html" class="week-btn done">8</a>
+                        <a href="week9.html" class="week-btn done">9</a>
+                        <a href="week10.html" class="week-btn done">10</a>
+                        <a href="week11.html" class="week-btn done">11</a>
+                        <a href="week12.html" class="week-btn done">12</a>
+                        <a href="week13.html" class="week-btn done active-week">13</a>
+                        <span class="week-btn upcoming">14</span>
+                    </div>
+                    <p style="font-size:0.72rem; color:#aaa; margin-top:12px; margin-bottom:0;">🟢 Completed &nbsp; ⬜ Upcoming</p>
+                </div>
+
+                <div class="sidebar-card">
+                    <p class="sidebar-title">Team</p>
+                    <div style="font-size:0.82rem;">
+                        <div class="info-row"><span>DELAI A.M.R.A.N.</span><span style="color:var(--primary);">E/21/081</span></div>
+                        <div class="info-row"><span>DISANAYAKE A.M.R.M.</span><span style="color:var(--primary);">E/21/103</span></div>
+                        <div class="info-row"><span>LAKSHANI M.B.N.W.</span><span style="color:var(--primary);">E/21/234</span></div>
+                        <div class="info-row"><span>Supervisor</span><span style="color:var(--primary);">Himal A. Suraweera</span></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card" style="background: var(--dark); color:#fff;">
+                    <p class="sidebar-title" style="color:var(--secondary);">Project</p>
+                    <p style="font-size:0.82rem; color:rgba(255,255,255,0.7); margin-bottom:10px;">Intelligent Greenhouse Monitoring System Based on IoT and Machine Learning</p>
+                    <p style="font-size:0.78rem; color:rgba(255,255,255,0.5); margin:0;">EEE · University of Peradeniya · 2025–2026</p>
+                    <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">YOLOv8</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">CNN</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">Dataset</span>
+                        <span style="background:rgba(139,195,74,0.15); color:var(--secondary); padding:3px 10px; border-radius:12px; font-size:0.68rem; font-weight:700;">IoT</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
