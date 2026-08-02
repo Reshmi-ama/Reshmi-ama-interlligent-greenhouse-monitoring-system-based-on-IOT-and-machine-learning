@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Week 13 — Pinning & Fruiting Stage Dataset | Intelligent Greenhouse Monitoring System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Week 13 update — Machine Learning fundamentals, pinning and fruiting stage identification, and dataset collection for YOLOv8-based mushroom growth-stage detection.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2d7a4f;
+            --primary-dark: #1a5235;
+            --secondary: #8bc34a;
+            --accent: #00bcd4;
+            --dark: #0f1f14;
+            --dark-2: #1a2e1e;
+            --light: #f0f7f2;
+            --text-muted: #6c8f76;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: #222; background: #fff; overflow-x: hidden; }
+        h1,h2,h3,h4,h5,h6 { font-family: 'Playfair Display', serif; }
+
+        /* NAVBAR */
+        .navbar { background: rgba(15,31,20,0.97); padding: 14px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+        .navbar-brand span { color: var(--secondary); }
+        .navbar-brand h1 { font-size: 1.3rem; color: #fff; margin: 0; }
+        .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; font-size: 0.88rem; }
+        .nav-link:hover { color: var(--secondary) !important; }
+
+        /* PAGE HEADER */
+        .page-header { background: linear-gradient(135deg, var(--dark) 0%, var(--dark-2) 100%); padding: 140px 0 60px; color: #fff; position: relative; }
+        .page-header::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=1600&q=60') center/cover; opacity: 0.18; }
+        .page-header .inner { position: relative; z-index: 2; }
+        .wk-chip-hero { display: inline-block; background: rgba(0,188,212,0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 18px; border-radius: 30px; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 18px; font-weight: 700; }
+        .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 14px; }
+        .page-header p.lead { font-size: 1rem; opacity: 0.85; max-width: 700px; }
+        .breadcrumb-link { color: rgba(255,255,255,0.6); font-size: 0.82rem; text-decoration: none; }
+        .breadcrumb-link:hover { color: var(--secondary); }
+
+        /* CONTENT */
+        .content-section { padding: 70px 0; }
+        .content-wrap { max-width: 780px; margin: 0 auto; }
+        .content-wrap h2 { font-size: 1.5rem; color: var(--dark); margin: 40px 0 16px; display: flex; align-items: center; gap: 12px; }
+        .content-wrap h2:first-child { margin-top: 0; }
+        .content-wrap h2 i { color: var(--primary); font-size: 1.2rem; }
+        .content-wrap p { font-size: 0.95rem; line-height: 1.8; color: #444; margin-bottom: 16px; }
+        .content-wrap ul { font-size: 0.95rem; line-height: 1.8; color: #444; margin-bottom: 16px; padding-left: 22px; }
+        .content-wrap li { margin-bottom: 8px; }
+        .content-wrap li strong { color: var(--dark); }
+
+        .info-card { background: var(--light); border-left: 4px solid var(--primary); border-radius: 8px; padding: 22px 26px; margin: 24px 0; }
+        .info-card h6 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--primary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-card p { margin: 0; font-size: 0.9rem; }
+
+        .stage-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+        @media (max-width: 600px) { .stage-cards { grid-template-columns: 1fr; } }
+        .stage-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.05); }
+        .stage-card .stage-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; margin-bottom: 12px; }
+        .stage-card h6 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.92rem; margin-bottom: 6px; }
+        .stage-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+        .meta-bar { display: flex; flex-wrap: wrap; gap: 22px; padding: 18px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 30px 0; font-size: 0.82rem; color: var(--text-muted); }
+        .meta-bar span i { color: var(--primary); margin-right: 6px; }
+
+        .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; }
+        .nav-btn { font-size: 0.85rem; font-weight: 600; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .nav-btn:hover { color: var(--primary-dark); }
+
+        footer { background: var(--dark); padding: 26px 0; text-align: center; color: rgba(255,255,255,0.45); font-size: 0.8rem; }
+        footer a { color: var(--secondary); text-decoration: none; }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="index.html#home">
+            <h1>🌿 <span>IGMS</span> · IoT &amp; ML</h1>
+        </a>
+        <a href="index.html#updates" class="breadcrumb-link"><i class="fas fa-arrow-left me-2"></i>Back to Weekly Updates</a>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+    <div class="container inner">
+        <span class="wk-chip-hero">Week 13 · In Progress</span>
+        <h1>Machine Learning — Pinning &amp; Fruiting Stage Dataset</h1>
+        <p class="lead">Learning the fundamentals of machine learning, understanding why growth-stage identification matters, and building an image dataset for YOLOv8-based detection.</p>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<section class="content-section">
+    <div class="container">
+        <div class="content-wrap">
+
+            <div class="meta-bar">
+                <span><i class="fas fa-calendar-alt"></i>Week 13</span>
+                <span><i class="fas fa-tag"></i>Machine Learning</span>
+                <span><i class="fas fa-camera"></i>Data Collection</span>
+            </div>
+
+            <h2><i class="fas fa-brain"></i>Learning Machine Learning</h2>
+            <p>This week's focus was on learning the fundamentals of machine learning as the next building block for the system's automated growth-stage monitoring. A key takeaway was understanding why it matters to correctly identify the <strong>pinning stage</strong> and the <strong>fruiting stage</strong> of the mushroom growth cycle — these two stages mark the transition points where environmental control decisions (light, humidity, ventilation) have the biggest impact on yield.</p>
+
+            <div class="stage-cards">
+                <div class="stage-card">
+                    <div class="stage-icon"><i class="fas fa-seedling"></i></div>
+                    <h6>Pinning Stage</h6>
+                    <p>The stage where tiny mushroom primordia ("pins") first appear — an important trigger point for adjusting environmental conditions.</p>
+                </div>
+                <div class="stage-card">
+                    <div class="stage-icon"><i class="fas fa-leaf"></i></div>
+                    <h6>Fruiting Stage</h6>
+                    <p>The stage where mushrooms mature and grow to harvestable size — accurate detection here supports harvest timing.</p>
+                </div>
+            </div>
+
+            <h2><i class="fas fa-camera"></i>Dataset Creation</h2>
+            <p>Work began on building an image dataset for training the stage-detection model. Photos are being captured using the camera setup already installed in the mushroom house, capturing the natural progression of growth stages under real cultivation conditions.</p>
+
+            <div class="info-card">
+                <h6><i class="fas fa-info-circle me-2"></i>Data Source</h6>
+                <p>Images are captured directly from the in-house camera setup installed in the mushroom house, providing real, on-site growth images rather than external reference images.</p>
+            </div>
+
+            <h2><i class="fas fa-object-group"></i>Planned Approach — YOLOv8</h2>
+            <p>The plan going forward is to use <strong>YOLOv8</strong> for stage detection. As an object detection model, YOLOv8 is intended to be trained on the collected dataset to detect and localize the pinning and fruiting stages directly from captured images, which can later feed into the system's automated monitoring pipeline.</p>
+
+            <div class="nav-buttons">
+                <a href="index.html#updates" class="nav-btn"><i class="fas fa-arrow-left"></i>Back to Weekly Updates</a>
+                <a href="index.html#timeline" class="nav-btn">View Full Timeline<i class="fas fa-arrow-right"></i></a>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <p class="mb-1"><strong style="color:rgba(255,255,255,0.8);">Intelligent Greenhouse Monitoring System Based on IoT and Machine Learning</strong></p>
+        <p class="mb-0">FYP · EEE Department · University of Peradeniya · Sri Lanka</p>
+    </div>
+</footer>
+
+</body>
+</html>
